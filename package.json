@@ -1,0 +1,33 @@
+{
+  "name": "russian-law",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Konard/russian-law.git"
+  },
+  "keywords": [
+    "law"
+  ],
+  "author": "",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/Konard/russian-law/issues"
+  },
+  "homepage": "https://github.com/Konard/russian-law#readme",
+  "dependencies": {
+    "@deep-foundation/deeplinks": "^0.0.322",
+    "axios": "^1.6.2",
+    "cheerio": "^1.0.0-rc.12",
+    "commander": "^11.1.0",
+    "iconv-lite": "^0.6.3",
+    "js-beautify": "^1.14.11",
+    "jsdom": "^22.1.0",
+    "prompt": "^1.3.0"
+  }
+}
