@@ -8,8 +8,8 @@ import { DeepClient, parseJwt } from "@deep-foundation/deeplinks/imports/client.
 // Преобразование HTML к JSON
 
 const makeDeepClient = () => {
-    let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwczovL2hhc3VyYS5pby9qd3QvY2xhaW1zIjp7IngtaGFzdXJhLWFsbG93ZWQtcm9sZXMiOlsiYWRtaW4iXSwieC1oYXN1cmEtZGVmYXVsdC1yb2xlIjoiYWRtaW4iLCJ4LWhhc3VyYS11c2VyLWlkIjoiMzgwIn0sImlhdCI6MTcwMjIzNDk0Mn0.peCkgsv7Ek2OsGjeDuh31F8Ncl2x19GCqMs-4cNRPPE"
-    let GQL_URN = "3006-deepfoundation-dev-ki66ej7rtj6.ws-eu106.gitpod.io/gql"
+    let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwczovL2hhc3VyYS5pby9qd3QvY2xhaW1zIjp7IngtaGFzdXJhLWFsbG93ZWQtcm9sZXMiOlsiYWRtaW4iXSwieC1oYXN1cmEtZGVmYXVsdC1yb2xlIjoiYWRtaW4iLCJ4LWhhc3VyYS11c2VyLWlkIjoiMzgwIn0sImlhdCI6MTcwMjcwNjI0OX0.Fx8J0SE0Ufhckb-1VSgTdx2Kmn5pR8eF-8jPhgTyXKk"
+    let GQL_URN = "3006-deepfoundation-dev-yjb479rm43x.ws-eu107.gitpod.io/gql"
     let GQL_SSL = "1"
     if (!token) throw new Error('No token provided');
     const decoded = parseJwt(token);
@@ -90,15 +90,19 @@ function htmlToJson(html) {
 }
 
 
-function createClauseOperation(clause, articleLinkId, type) {
+function createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containTypeLinkId ) {
     return {
         table: 'links',
         type: 'insert',
         objects: {
-            type_id: type,
-            from_id: articleLinkId,
-            to_id: articleLinkId,
-            string: { data: { value: clause } },
+            type_id: clauseTypeLinkId,
+            in: {
+                data: articleLinkId ? [{
+                    type_id: containTypeLinkId,
+                    from_id: articleLinkId,
+                    string: { data: { value: clause } },
+                }] : [],
+            },
         },
     };
 }
@@ -142,8 +146,8 @@ async function processHtmlAndCreateLinks(html) {
                 const articleLinkId = reservedIds.pop();
                 operations.push(createLinkOperation(articleLinkId, articleTypeLinkId, containTypeLinkId,article.title, deep, chapterLinkId));
                 article.clauses.forEach(clause => {
-                    operations.push(createClauseOperation(clause, articleLinkId, clauseTypeLinkId));
-                });           
+                    operations.push(createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containTypeLinkId));
+                });
             });
         });
     });
@@ -152,7 +156,7 @@ async function processHtmlAndCreateLinks(html) {
     return result;
 }
 
-function createLinkOperation(linkId, type, contain, title, deep, parentId = 1618) {
+function createLinkOperation(linkId, type, contain, title, deep, parentId = 3348) {
 
     return {
         table: 'links',
@@ -160,8 +164,6 @@ function createLinkOperation(linkId, type, contain, title, deep, parentId = 1618
         objects: {
             id: linkId,
             type_id: type,
-            from_id: parentId,
-            to_id: parentId,
             in: {
                 data: parentId ? [{
                     type_id: contain,
@@ -173,11 +175,33 @@ function createLinkOperation(linkId, type, contain, title, deep, parentId = 1618
     };
 }
 
+async function text(deep) {
+    const results = await deep.select({
+        up: {
+            parent_id: 1600,
+        }
+    });
+    return results;
+}
 
-const html = fs.readFileSync('./data/html/102110364.html', 'utf8');
-
-const json = processHtmlAndCreateLinks(html);
+// const html = fs.readFileSync('./data/html/102110364.html', 'utf8');
+// const json = processHtmlAndCreateLinks(html);
 // console.log('json', json);
-// console.log('json.sections[0].chapters', json.sections[0].chapters);
+// // console.log('json.sections[0].chapters', json.sections[0].chapters);
+//
+// saveFile('./data/json/102110364.json', JSON.stringify(json, null, 2));
+const deep = makeDeepClient()
+const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain')
+console.log('containTypeLinkId', containTypeLinkId);
+text(deep).then((result) => {
 
-saveFile('./data/json/102110364.json', JSON.stringify(json, null, 2));
+    deep.minilinks.apply(result.data);
+    // console.log(Object.keys(deep.minilinks))
+
+    for (let i = 0; i < 10; i++) {
+        let id = deep.minilinks.byId[1600].outByType[containTypeLinkId][i].to.value
+        console.log('id', id);
+        // let lvl2 = deep.minilinks.byId[id].outByType[containTypeLinkId][i].to
+    }
+
+});
