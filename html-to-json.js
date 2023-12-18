@@ -223,7 +223,9 @@ function processDeepLinks(deep, rootId) {
                 if (clauseLinks !== undefined){
                     clauseLinks.forEach(clauseLink => {
                         const clauseId = clauseLink.id;
+                        const clauseTitle = clauseLink.string.value;
                         console.log(`    Clause ID: ${clauseId}`);
+                        console.log(`    Clause Title: ${clauseTitle}`);
                     });
                 }
             });
@@ -232,11 +234,38 @@ function processDeepLinks(deep, rootId) {
     });
 }
 
-// Пример вызова функции
+function rebuildHtmlFromDeepLinks(deep, rootId) {
+    let htmlContent = "";
+
+    const sectionLinks = deep.minilinks.byId[rootId].outByType[containTypeLinkId];
+    sectionLinks.forEach(sectionLink => {
+        const sectionId = sectionLink.to.id;
+        const sectionTitle = sectionLink.string.value;
+        htmlContent += `<h1>${sectionTitle}</h1>\n`;
+
+        const articleLinks = deep.minilinks.byId[sectionId].outByType[containTypeLinkId];
+        articleLinks?.forEach(articleLink => {
+            const articleId = articleLink.to.id;
+            const articleTitle = articleLink.string.value;
+            htmlContent += `<h2>${articleTitle}</h2>\n`;
+
+            const clauseLinks = deep.minilinks.byId[articleId].outByType[containTypeLinkId];
+            clauseLinks?.forEach(clauseLink => {
+                const clauseTitle = clauseLink.string.value;
+                htmlContent += `<p>${clauseTitle}</p>\n`;
+            });
+        });
+    });
+
+    return `<html><body>${htmlContent}</body></html>`;
+}
 text(deep).then((result) => {
 
     deep.minilinks.apply(result.data);
-    processDeepLinks(deep, 8485);
+    const html = rebuildHtmlFromDeepLinks(deep, 8485);
+    console.log(html);
 
+    // Если нужно сохранить HTML в файл
+    saveFile('rebuilt.html', html);
 
 });
