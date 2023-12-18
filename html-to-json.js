@@ -141,12 +141,19 @@ async function processHtmlAndCreateLinks(html) {
         operations.push(createLinkOperation(sectionLinkId, sectionTypeLinkId, containTypeLinkId,section.title, deep));
         section.chapters.forEach(chapter => {
             const chapterLinkId = reservedIds.pop();
-            operations.push(createLinkOperation(chapterLinkId, chapterTypeLinkId, containTypeLinkId,chapter.title, deep, sectionLinkId));
+            if (chapter.title !== null && chapter.title !== undefined && chapter.title !== "") {
+                operations.push(createLinkOperation(chapterLinkId, chapterTypeLinkId, containTypeLinkId,chapter.title, deep, sectionLinkId));
+            }
             chapter.articles.forEach(article => {
                 const articleLinkId = reservedIds.pop();
-                operations.push(createLinkOperation(articleLinkId, articleTypeLinkId, containTypeLinkId,article.title, deep, chapterLinkId));
+                if (article.title !== null && article.title !== undefined && article.title !== "") {
+                    operations.push(createLinkOperation(articleLinkId, articleTypeLinkId, containTypeLinkId, article.title, deep, chapterLinkId));
+                }
                 article.clauses.forEach(clause => {
-                    operations.push(createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containTypeLinkId));
+                    if (clause !== null && clause !== undefined && clause !== "")
+                    {
+                        operations.push(createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containTypeLinkId));
+                    }
                 });
             });
         });
@@ -156,7 +163,7 @@ async function processHtmlAndCreateLinks(html) {
     return result;
 }
 
-function createLinkOperation(linkId, type, contain, title, deep, parentId = 3348) {
+function createLinkOperation(linkId, type, contain, title, deep, parentId = 7748) {
 
     return {
         table: 'links',
@@ -178,7 +185,7 @@ function createLinkOperation(linkId, type, contain, title, deep, parentId = 3348
 async function text(deep) {
     const results = await deep.select({
         up: {
-            parent_id: 1600,
+            parent_id: 8485,
         }
     });
     return results;
@@ -190,18 +197,46 @@ async function text(deep) {
 // // console.log('json.sections[0].chapters', json.sections[0].chapters);
 //
 // saveFile('./data/json/102110364.json', JSON.stringify(json, null, 2));
+
 const deep = makeDeepClient()
 const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain')
 console.log('containTypeLinkId', containTypeLinkId);
+function processDeepLinks(deep, rootId) {
+    // Получаем все связи типа 'Contain' для корневого узла
+    const sectionLinks = deep.minilinks.byId[rootId].outByType[containTypeLinkId];
+
+    sectionLinks.forEach(sectionLink => {
+        const sectionId = sectionLink.to.id;
+        const sectionTitle = sectionLink.string.value;
+        console.log(`Section ID: ${sectionId}`);
+        console.log(`Section Title: ${sectionTitle}`);
+
+        // Получаем все связи типа 'Contain' для каждого раздела
+        const articleLinks = deep.minilinks.byId[sectionId].outByType[containTypeLinkId];
+        if (articleLinks !== undefined) {
+            articleLinks.forEach(articleLink => {
+                const articleId = articleLink.to.id;
+                const articleTitle = articleLink.string.value;
+                console.log(`  Article ID: ${articleId}`);
+                console.log(`  Article Title: ${articleTitle}`);
+                const clauseLinks = deep.minilinks.byId[articleId].outByType[containTypeLinkId];
+                if (clauseLinks !== undefined){
+                    clauseLinks.forEach(clauseLink => {
+                        const clauseId = clauseLink.id;
+                        console.log(`    Clause ID: ${clauseId}`);
+                    });
+                }
+            });
+        }
+
+    });
+}
+
+// Пример вызова функции
 text(deep).then((result) => {
 
     deep.minilinks.apply(result.data);
-    // console.log(Object.keys(deep.minilinks))
+    processDeepLinks(deep, 8485);
 
-    for (let i = 0; i < 10; i++) {
-        let id = deep.minilinks.byId[1600].outByType[containTypeLinkId][i].to.value
-        console.log('id', id);
-        // let lvl2 = deep.minilinks.byId[id].outByType[containTypeLinkId][i].to
-    }
 
 });
