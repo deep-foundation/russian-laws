@@ -45,15 +45,14 @@ function htmlToJson(html) {
             result.preamble.push(htmlContent);
             continue;
         }
-        if (p.classList.contains("I")){
-            continue;
-        }
-        if (p.classList.contains("H") || p.classList.contains("T")) {
+        if (p.classList.contains("H") || p.classList.contains("T") || p.classList.contains("I")) {
             preambleMode = false;
             let paragraphType;
             if (text.startsWith("РАЗДЕЛ") || text.startsWith("Раздел")) paragraphType = "section";
             if (text.startsWith("ГЛАВА") || text.startsWith("Глава")) paragraphType = "chapter";
             if (text.startsWith("Статья")) paragraphType = "article";
+            if (text.startsWith("(") || p.classList.contains("I")) paragraphType = "comment";
+
             switch (paragraphType) {
                 case "section":
                     currentSection = { title: htmlContent, chapters: [] };
@@ -72,7 +71,7 @@ function htmlToJson(html) {
                     currentArticle = null;
                     break;
                 case "article":
-                    currentArticle = { title: htmlContent, clauses: [] };
+                    currentArticle = { title: htmlContent, clauses: [], comments: [] };
                     if (currentChapter) {
                         currentChapter.articles.push(currentArticle);
                     } else {
@@ -83,6 +82,21 @@ function htmlToJson(html) {
                             currentSection = { title: "", chapters: [currentChapter] };
                             result.sections.push(currentSection);
                         }
+                    }
+                    break;
+                case "comment":
+                    const comment = { text: htmlContent };
+                    if (currentArticle) {
+                        currentArticle.comments.push(comment);
+                    } else if (currentChapter) {
+                        currentChapter.comments = currentChapter.comments || [];
+                        currentChapter.comments.push(comment);
+                    } else if (currentSection) {
+                        currentSection.comments = currentSection.comments || [];
+                        currentSection.comments.push(comment);
+                    } else {
+                        result.preambleComments = result.preambleComments || [];
+                        result.preambleComments.push(comment);
                     }
                     break;
                 default:
@@ -122,17 +136,20 @@ function createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containT
 
 async function processHtmlAndCreateLinks(html) {
     let deep = makeDeepClient();
-    const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain')
+    const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain');
+    const commentTypeLinkId = await deep.id('@senchapencha/law', 'Comment');
+    const articleTypeLinkId = await deep.id('@senchapencha/law', 'Article');
+    const sectionTypeLinkId = await deep.id('@senchapencha/law', 'Section');
+    const chapterTypeLinkId = await deep.id('@senchapencha/law', 'Chapter');
+    const clauseTypeLinkId = await deep.id('@senchapencha/law', 'Clause');
 
-    const articleTypeLinkId = await deep.id('@senchapencha/law', 'Article')
-    const sectionTypeLinkId = await deep.id('@senchapencha/law', 'Section')
-    const chapterTypeLinkId = await deep.id('@senchapencha/law', 'Chapter')
-    const clauseTypeLinkId = await deep.id('@senchapencha/law', 'Clause')
     console.log('containTypeLinkId', containTypeLinkId);
+    console.log('commentTypeLinkId', commentTypeLinkId);
     console.log('articleTypeLinkId', articleTypeLinkId);
     console.log('sectionTypeLinkId', sectionTypeLinkId);
     console.log('chapterTypeLinkId', chapterTypeLinkId);
     console.log('clauseTypeLinkId', clauseTypeLinkId);
+
     const json = htmlToJson(html);
 
     let count = 0;
@@ -149,24 +166,42 @@ async function processHtmlAndCreateLinks(html) {
     const reservedIds = await deep.reserve(count);
 
     let operations = [];
+    const processComments = (comments, parentLinkId) => {
+        comments?.forEach(comment => {
+            operations.push({
+                table: 'links',
+                type: 'insert',
+                objects: {
+                    type_id: commentTypeLinkId,
+                    in: {
+                        data: parentLinkId ? [{
+                            type_id: containTypeLinkId,
+                            from_id: parentLinkId,
+                            string: { data: { value: comment.text } },
+                        }] : [],
+                    },
+                },
+            });
+        });
+    };
+
     json.sections.forEach(section => {
         const sectionLinkId = reservedIds.pop();
-        operations.push(createLinkOperation(sectionLinkId, sectionTypeLinkId, containTypeLinkId,section.title, deep));
+        operations.push(createLinkOperation(sectionLinkId, sectionTypeLinkId, containTypeLinkId, section.title, deep));
+        processComments(section.comments, sectionLinkId);
+
         section.chapters.forEach(chapter => {
             const chapterLinkId = reservedIds.pop();
-            if (chapter.title !== null && chapter.title !== undefined && chapter.title !== "") {
-                operations.push(createLinkOperation(chapterLinkId, chapterTypeLinkId, containTypeLinkId,chapter.title, deep, sectionLinkId));
-            }
+            operations.push(createLinkOperation(chapterLinkId, chapterTypeLinkId, containTypeLinkId, chapter.title, deep, sectionLinkId));
+            processComments(chapter.comments, chapterLinkId);
+
             chapter.articles.forEach(article => {
                 const articleLinkId = reservedIds.pop();
-                if (article.title !== null && article.title !== undefined && article.title !== "") {
-                    operations.push(createLinkOperation(articleLinkId, articleTypeLinkId, containTypeLinkId, article.title, deep, chapterLinkId));
-                }
+                operations.push(createLinkOperation(articleLinkId, articleTypeLinkId, containTypeLinkId, article.title, deep, chapterLinkId));
+                processComments(article.comments, articleLinkId);
+
                 article.clauses.forEach(clause => {
-                    if (clause !== null && clause !== undefined && clause !== "")
-                    {
-                        operations.push(createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containTypeLinkId));
-                    }
+                    operations.push(createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containTypeLinkId));
                 });
             });
         });
@@ -176,7 +211,7 @@ async function processHtmlAndCreateLinks(html) {
     return result;
 }
 
-function createLinkOperation(linkId, type, contain, title, deep, parentId = 16392) {
+function createLinkOperation(linkId, type, contain, title, deep, parentId = 19750) {
 
     return {
         table: 'links',
@@ -267,14 +302,14 @@ function rebuildHtmlFromDeepLinks(deep, rootId) {
 const deep = makeDeepClient()
 const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain')
 console.log('containTypeLinkId', containTypeLinkId);
-
+//
 // let html = fs.readFileSync('./data/html/102110364.html', 'utf8');
 // let result = htmlToJson(html);
 // saveFile('./data/json/102110364.json', JSON.stringify(result, null, 2));
 // processHtmlAndCreateLinks(html);
-getLinksUp(deep, 16620).then((result) => {
+getLinksUp(deep, 20203).then((result) => {
     deep.minilinks.apply(result.data);
-    const html = rebuildHtmlFromDeepLinks(deep, 16620);
+    const html = rebuildHtmlFromDeepLinks(deep, 20203);
 
     saveFile('rebuilt.html', html);
 
