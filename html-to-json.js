@@ -1,15 +1,14 @@
-import { JSDOM } from "jsdom";
-import fs from 'fs';
-import path from 'path';
-import { saveFile } from './files.js';
+import {JSDOM} from "jsdom";
+import {saveFile} from './files.js';
 
-import { generateApolloClient } from "@deep-foundation/hasura/client.js";
-import { DeepClient, parseJwt } from "@deep-foundation/deeplinks/imports/client.js";
+import {generateApolloClient} from "@deep-foundation/hasura/client.js";
+import {DeepClient, parseJwt} from "@deep-foundation/deeplinks/imports/client.js";
+import fs from "fs";
 // Преобразование HTML к JSON
 
 const makeDeepClient = () => {
-    let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwczovL2hhc3VyYS5pby9qd3QvY2xhaW1zIjp7IngtaGFzdXJhLWFsbG93ZWQtcm9sZXMiOlsiYWRtaW4iXSwieC1oYXN1cmEtZGVmYXVsdC1yb2xlIjoiYWRtaW4iLCJ4LWhhc3VyYS11c2VyLWlkIjoiMzgwIn0sImlhdCI6MTcwMjcwNjI0OX0.Fx8J0SE0Ufhckb-1VSgTdx2Kmn5pR8eF-8jPhgTyXKk"
-    let GQL_URN = "3006-deepfoundation-dev-yjb479rm43x.ws-eu107.gitpod.io/gql"
+    let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwczovL2hhc3VyYS5pby9qd3QvY2xhaW1zIjp7IngtaGFzdXJhLWFsbG93ZWQtcm9sZXMiOlsiYWRtaW4iXSwieC1oYXN1cmEtZGVmYXVsdC1yb2xlIjoiYWRtaW4iLCJ4LWhhc3VyYS11c2VyLWlkIjoiMzgwIn0sImlhdCI6MTcwMjkzMzQ5NX0.Ishb_Z94vvgjlvzC9xMvYfyDEJSU13BikjL1n9F_hLk"
+    let GQL_URN = "3006-deepfoundation-dev-a1imnyn6psf.ws-eu107.gitpod.io/gql"
     let GQL_SSL = "1"
     if (!token) throw new Error('No token provided');
     const decoded = parseJwt(token);
@@ -37,43 +36,57 @@ function htmlToJson(html) {
 
     for (const p of paragraphs) {
         const text = p.textContent.trim();
-        if (!text) continue;
+        const htmlContent = p.innerHTML.trim();
+        if (htmlContent === '&nbsp;' || !text) {
+            continue;
+        }
 
         if (preambleMode && !p.classList.contains("H") && !p.classList.contains("T")) {
             result.preamble.push(text);
             continue;
         }
-
+        if (p.classList.contains("I")){
+            continue;
+        }
         if (p.classList.contains("H") || p.classList.contains("T")) {
             preambleMode = false;
-
-            if (text.startsWith("РАЗДЕЛ") || text.startsWith("Раздел")) {
-                currentSection = { title: text, chapters: [] };
-                result.sections.push(currentSection);
-                currentChapter = null;
-                currentArticle = null;
-            } else if (text.startsWith("ГЛАВА") || text.startsWith("Глава")) {
-                currentChapter = { title: text, articles: [] };
-                if (currentSection) {
-                    currentSection.chapters.push(currentChapter);
-                } else {
-                    currentSection = { title: "", chapters: [currentChapter] };
+            let paragraphType;
+            if (text.startsWith("РАЗДЕЛ") || text.startsWith("Раздел")) paragraphType = "section";
+            if (text.startsWith("ГЛАВА") || text.startsWith("Глава")) paragraphType = "chapter";
+            if (text.startsWith("Статья")) paragraphType = "article";
+            switch (paragraphType) {
+                case "section":
+                    currentSection = { title: text, chapters: [] };
                     result.sections.push(currentSection);
-                }
-                currentArticle = null;
-            } else if (text.startsWith("Статья")) {
-                currentArticle = { title: text, clauses: [] };
-                if (currentChapter) {
-                    currentChapter.articles.push(currentArticle);
-                } else {
-                    currentChapter = { title: "", articles: [currentArticle] };
+                    currentChapter = null;
+                    currentArticle = null;
+                    break;
+                case "chapter":
+                    currentChapter = { title: text, articles: [] };
                     if (currentSection) {
                         currentSection.chapters.push(currentChapter);
                     } else {
                         currentSection = { title: "", chapters: [currentChapter] };
                         result.sections.push(currentSection);
                     }
-                }
+                    currentArticle = null;
+                    break;
+                case "article":
+                    currentArticle = { title: text, clauses: [] };
+                    if (currentChapter) {
+                        currentChapter.articles.push(currentArticle);
+                    } else {
+                        currentChapter = { title: "", articles: [currentArticle] };
+                        if (currentSection) {
+                            currentSection.chapters.push(currentChapter);
+                        } else {
+                            currentSection = { title: "", chapters: [currentChapter] };
+                            result.sections.push(currentSection);
+                        }
+                    }
+                    break;
+                default:
+                    break;
             }
         } else if (currentArticle) {
             currentArticle.clauses.push(text);
@@ -163,7 +176,7 @@ async function processHtmlAndCreateLinks(html) {
     return result;
 }
 
-function createLinkOperation(linkId, type, contain, title, deep, parentId = 7748) {
+function createLinkOperation(linkId, type, contain, title, deep, parentId = 6412) {
 
     return {
         table: 'links',
@@ -182,13 +195,12 @@ function createLinkOperation(linkId, type, contain, title, deep, parentId = 7748
     };
 }
 
-async function text(deep) {
-    const results = await deep.select({
+async function text(deep, id) {
+    return await deep.select({
         up: {
-            parent_id: 8485,
+            parent_id: id,
         }
     });
-    return results;
 }
 
 // const html = fs.readFileSync('./data/html/102110364.html', 'utf8');
@@ -259,13 +271,32 @@ function rebuildHtmlFromDeepLinks(deep, rootId) {
 
     return `<html><body>${htmlContent}</body></html>`;
 }
-text(deep).then((result) => {
+function countElements(elements) {
+    const countMap = {};
+
+    elements.forEach(element => {
+        if (countMap[element]) {
+            countMap[element] += 1;
+        } else {
+            countMap[element] = 1;
+        }
+    });
+
+    return countMap;
+}
+
+// let html = fs.readFileSync('./data/html/102110364.html', 'utf8');
+// let result = htmlToJson(html);
+// saveFile('./data/json/102110364.json', JSON.stringify(result, null, 2));
+// processHtmlAndCreateLinks(html);
+text(deep, 6640).then((result) => {
 
     deep.minilinks.apply(result.data);
-    const html = rebuildHtmlFromDeepLinks(deep, 8485);
-    console.log(html);
+    const html = rebuildHtmlFromDeepLinks(deep, 6640);
+    // console.log(html);
 
     // Если нужно сохранить HTML в файл
     saveFile('rebuilt.html', html);
 
 });
+
