@@ -35,14 +35,14 @@ function htmlToJson(html) {
     let preambleMode = true;
 
     for (const p of paragraphs) {
-        const text = p.textContent.trim();
+        let text = p.textContent.trim();
         const htmlContent = p.innerHTML.trim();
         if (htmlContent === '&nbsp;' || !text) {
             continue;
         }
 
         if (preambleMode && !p.classList.contains("H") && !p.classList.contains("T")) {
-            result.preamble.push(text);
+            result.preamble.push(htmlContent);
             continue;
         }
         if (p.classList.contains("I")){
@@ -56,13 +56,13 @@ function htmlToJson(html) {
             if (text.startsWith("Статья")) paragraphType = "article";
             switch (paragraphType) {
                 case "section":
-                    currentSection = { title: text, chapters: [] };
+                    currentSection = { title: htmlContent, chapters: [] };
                     result.sections.push(currentSection);
                     currentChapter = null;
                     currentArticle = null;
                     break;
                 case "chapter":
-                    currentChapter = { title: text, articles: [] };
+                    currentChapter = { title: htmlContent, articles: [] };
                     if (currentSection) {
                         currentSection.chapters.push(currentChapter);
                     } else {
@@ -72,7 +72,7 @@ function htmlToJson(html) {
                     currentArticle = null;
                     break;
                 case "article":
-                    currentArticle = { title: text, clauses: [] };
+                    currentArticle = { title: htmlContent, clauses: [] };
                     if (currentChapter) {
                         currentChapter.articles.push(currentArticle);
                     } else {
@@ -89,13 +89,13 @@ function htmlToJson(html) {
                     break;
             }
         } else if (currentArticle) {
-            currentArticle.clauses.push(text);
+            currentArticle.clauses.push(htmlContent);
         } else if (currentChapter) {
-            currentChapter.articles.push({ title: "", clauses: [text] });
+            currentChapter.articles.push({ title: "", clauses: [htmlContent] });
         } else if (currentSection) {
-            currentSection.chapters.push({ title: "", articles: [{ title: "", clauses: [text] }] });
+            currentSection.chapters.push({ title: "", articles: [{ title: "", clauses: [htmlContent] }] });
         } else {
-            result.preamble.push(text);
+            result.preamble.push(htmlContent);
         }
     }
 
@@ -176,7 +176,7 @@ async function processHtmlAndCreateLinks(html) {
     return result;
 }
 
-function createLinkOperation(linkId, type, contain, title, deep, parentId = 6412) {
+function createLinkOperation(linkId, type, contain, title, deep, parentId = 16392) {
 
     return {
         table: 'links',
@@ -195,7 +195,7 @@ function createLinkOperation(linkId, type, contain, title, deep, parentId = 6412
     };
 }
 
-async function text(deep, id) {
+async function getLinksUp(deep, id) {
     return await deep.select({
         up: {
             parent_id: id,
@@ -203,16 +203,7 @@ async function text(deep, id) {
     });
 }
 
-// const html = fs.readFileSync('./data/html/102110364.html', 'utf8');
-// const json = processHtmlAndCreateLinks(html);
-// console.log('json', json);
-// // console.log('json.sections[0].chapters', json.sections[0].chapters);
-//
-// saveFile('./data/json/102110364.json', JSON.stringify(json, null, 2));
 
-const deep = makeDeepClient()
-const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain')
-console.log('containTypeLinkId', containTypeLinkId);
 function processDeepLinks(deep, rootId) {
     // Получаем все связи типа 'Contain' для корневого узла
     const sectionLinks = deep.minilinks.byId[rootId].outByType[containTypeLinkId];
@@ -253,49 +244,38 @@ function rebuildHtmlFromDeepLinks(deep, rootId) {
     sectionLinks.forEach(sectionLink => {
         const sectionId = sectionLink.to.id;
         const sectionTitle = sectionLink.string.value;
-        htmlContent += `<h1>${sectionTitle}</h1>\n`;
+        htmlContent += `<p class="H">${sectionTitle}</p>\n`;
 
         const articleLinks = deep.minilinks.byId[sectionId].outByType[containTypeLinkId];
         articleLinks?.forEach(articleLink => {
             const articleId = articleLink.to.id;
             const articleTitle = articleLink.string.value;
-            htmlContent += `<h2>${articleTitle}</h2>\n`;
+            htmlContent += `  <p class="H">${articleTitle}</p>\n`;
 
             const clauseLinks = deep.minilinks.byId[articleId].outByType[containTypeLinkId];
             clauseLinks?.forEach(clauseLink => {
                 const clauseTitle = clauseLink.string.value;
-                htmlContent += `<p>${clauseTitle}</p>\n`;
+                htmlContent += `  <p>${clauseTitle}</p>\n`;
             });
         });
     });
 
     return `<html><body>${htmlContent}</body></html>`;
 }
-function countElements(elements) {
-    const countMap = {};
 
-    elements.forEach(element => {
-        if (countMap[element]) {
-            countMap[element] += 1;
-        } else {
-            countMap[element] = 1;
-        }
-    });
 
-    return countMap;
-}
+const deep = makeDeepClient()
+const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain')
+console.log('containTypeLinkId', containTypeLinkId);
 
 // let html = fs.readFileSync('./data/html/102110364.html', 'utf8');
 // let result = htmlToJson(html);
 // saveFile('./data/json/102110364.json', JSON.stringify(result, null, 2));
 // processHtmlAndCreateLinks(html);
-text(deep, 6640).then((result) => {
-
+getLinksUp(deep, 16620).then((result) => {
     deep.minilinks.apply(result.data);
-    const html = rebuildHtmlFromDeepLinks(deep, 6640);
-    // console.log(html);
+    const html = rebuildHtmlFromDeepLinks(deep, 16620);
 
-    // Если нужно сохранить HTML в файл
     saveFile('rebuilt.html', html);
 
 });
