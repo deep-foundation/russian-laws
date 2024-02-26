@@ -8,19 +8,42 @@ const { saveFile } = require('./files.js');
 const { program } = require('commander');
 const cheerio = require('cheerio');
 const beautify = require('js-beautify').html;
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
-program
-    .option('-d, --directory <type>', 'Directory', './data/html')
-    .option('-n, --name <type>', 'File name (required)')
-    .option('-e, --extension <type>', 'File extension', '.html')
-    .option('-s, --source-document-id <type>', 'Source Document ID (required)')
-    .parse(process.argv);
+const options = yargs(hideBin(process.argv))
+  .usage(`$0 [Options]`, `Description of the program`)
+  .options({
+    directory: {
+      alias: "d",
+      description: "Directory where the file is  located",
+      type: "string",
+      demandOption: false,
+      default: './data/html'
+    },
+    name: {
+      alias: "n",
+      description: "File name",
+      type: "string",
+      demandOption: true
+    },
+    extension: {
+      alias: "e",
+      description: "File extension",
+      type: "string",
+      demandOption: false,
+      default: '.html'
+    },
+    sourceDocumentId: {
+      alias: "s",
+      description: "Source Document ID",
+      type: "string",
+      demandOption: true
+    }
+  })
+  .strict()
+  .parseSync();
 
-const options = program.opts();
-if (!options.name || !options.sourceDocumentId) {
-  console.log('--name and --source-document-id are required');
-  process.exit(1);
-}
 const fileName = options.name + options.extension
 const directory = options.directory.endsWith('/') ? options.directory : options.directory + '/';  
 let html = '';
