@@ -2,7 +2,8 @@ import {JSDOM} from "jsdom";
 import {saveFile} from './files.js';
 
 import {generateApolloClient} from "@deep-foundation/hasura/client.js";
-import {DeepClient, parseJwt} from "@deep-foundation/deeplinks/imports/client.js";
+import {DeepClient, SerialOperation, parseJwt} from "@deep-foundation/deeplinks/imports/client.js";
+import {createSerialOperation} from "@deep-foundation/deeplinks/imports/gql/index.js";
 import fs from "fs";
 // Преобразование HTML к JSON
 
@@ -24,17 +25,24 @@ const makeDeepClient = () => {
     return deepClient;
 }
 
+type Section = { title: string, chapters: Array<Chapter> ,comments: Array<any> } | null
+type Chapter = { title: string, articles: Array<Article>, comments: Array<any> } | null
+type Article = { title: string, clauses: Array<string> , comments: Array<any>} | null
+
 function htmlToJson(html) {
-    const result = { preamble: [], sections: [] };
+    const result: {preamble: Array<string>; sections: Array<any>, preambleComments: Array<any>} = { preamble: [], sections: [],preambleComments: [] };
     const dom = new JSDOM(html);
     const paragraphs = [...dom.window.document.querySelectorAll("p")];
 
-    let currentSection = null;
-    let currentChapter = null;
-    let currentArticle = null;
+    let currentSection:  Section= null;
+    let currentChapter: Chapter = null;
+    let currentArticle: Article = null;
     let preambleMode = true;
 
     for (const p of paragraphs) {
+        if(!p.textContent) {
+            throw new Error('Empty paragraph');
+        }
         let text = p.textContent.trim();
         const htmlContent = p.innerHTML.trim();
         if (htmlContent === '&nbsp;' || !text) {
@@ -55,17 +63,17 @@ function htmlToJson(html) {
 
             switch (paragraphType) {
                 case "section":
-                    currentSection = { title: htmlContent, chapters: [] };
+                    currentSection = { title: htmlContent, chapters: [],comments: []};
                     result.sections.push(currentSection);
                     currentChapter = null;
                     currentArticle = null;
                     break;
                 case "chapter":
-                    currentChapter = { title: htmlContent, articles: [] };
+                    currentChapter = { title: htmlContent, articles: [],comments: []};
                     if (currentSection) {
                         currentSection.chapters.push(currentChapter);
                     } else {
-                        currentSection = { title: "", chapters: [currentChapter] };
+                        currentSection = { title: "", chapters: [currentChapter] ,comments: []};
                         result.sections.push(currentSection);
                     }
                     currentArticle = null;
@@ -75,11 +83,11 @@ function htmlToJson(html) {
                     if (currentChapter) {
                         currentChapter.articles.push(currentArticle);
                     } else {
-                        currentChapter = { title: "", articles: [currentArticle] };
+                        currentChapter = { title: "", articles: [currentArticle],comments: []};
                         if (currentSection) {
                             currentSection.chapters.push(currentChapter);
                         } else {
-                            currentSection = { title: "", chapters: [currentChapter] };
+                            currentSection = { title: "", chapters: [currentChapter] ,comments: []};
                             result.sections.push(currentSection);
                         }
                     }
@@ -105,9 +113,9 @@ function htmlToJson(html) {
         } else if (currentArticle) {
             currentArticle.clauses.push(htmlContent);
         } else if (currentChapter) {
-            currentChapter.articles.push({ title: "", clauses: [htmlContent] });
+            currentChapter.articles.push({ title: "", clauses: [htmlContent],comments: []});
         } else if (currentSection) {
-            currentSection.chapters.push({ title: "", articles: [{ title: "", clauses: [htmlContent] }] });
+            currentSection.chapters.push({ title: "", articles: [{ title: "", clauses: [htmlContent],comments: [] }], comments: [] });
         } else {
             result.preamble.push(htmlContent);
         }
@@ -118,7 +126,7 @@ function htmlToJson(html) {
 
 
 function createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containTypeLinkId ) {
-    return {
+    return createSerialOperation({
         table: 'links',
         type: 'insert',
         objects: {
@@ -131,7 +139,7 @@ function createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containT
                 }] : [],
             },
         },
-    };
+    });
 }
 
 async function processHtmlAndCreateLinks(html) {
@@ -165,7 +173,7 @@ async function processHtmlAndCreateLinks(html) {
 
     const reservedIds = await deep.reserve(count);
 
-    let operations = [];
+    let operations: Array<SerialOperation> = [];
     const processComments = (comments, parentLinkId) => {
         comments?.forEach(comment => {
             operations.push({
@@ -187,16 +195,25 @@ async function processHtmlAndCreateLinks(html) {
 
     json.sections.forEach(section => {
         const sectionLinkId = reservedIds.pop();
+        if(!sectionLinkId) {
+            throw new Error('No reserved id');
+        }
         operations.push(createLinkOperation(sectionLinkId, sectionTypeLinkId, containTypeLinkId, section.title, deep));
         processComments(section.comments, sectionLinkId);
 
         section.chapters.forEach(chapter => {
             const chapterLinkId = reservedIds.pop();
+            if(!chapterLinkId) {
+                throw new Error('No reserved id');
+            }
             operations.push(createLinkOperation(chapterLinkId, chapterTypeLinkId, containTypeLinkId, chapter.title, deep, sectionLinkId));
             processComments(chapter.comments, chapterLinkId);
 
             chapter.articles.forEach(article => {
                 const articleLinkId = reservedIds.pop();
+                if(!articleLinkId) {
+                    throw new Error('No reserved id');
+                }
                 operations.push(createLinkOperation(articleLinkId, articleTypeLinkId, containTypeLinkId, article.title, deep, chapterLinkId));
                 processComments(article.comments, articleLinkId);
 
@@ -211,11 +228,11 @@ async function processHtmlAndCreateLinks(html) {
     return result;
 }
 
-function createLinkOperation(linkId, type, contain, title, deep, parentId = 19750) {
+function createLinkOperation(linkId: number, type: number, contain: number, title: string, deep: DeepClient, parentId = 19750) {
 
-    return {
+    return createSerialOperation({
         table: 'links',
-        type: 'insert',
+        type: 'insert' ,
         objects: {
             id: linkId,
             type_id: type,
@@ -227,7 +244,7 @@ function createLinkOperation(linkId, type, contain, title, deep, parentId = 1975
                 }] : [],
             },
         },
-    };
+    });
 }
 
 async function getLinksUp(deep, id) {
@@ -314,4 +331,3 @@ getLinksUp(deep, 20203).then((result) => {
     saveFile('rebuilt.html', html);
 
 });
-
