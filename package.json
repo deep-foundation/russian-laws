@@ -31,6 +31,7 @@
     "prompt": "^1.3.0"
   },
   "devDependencies": {
-    "npx": "^10.2.2"
+    "npx": "^10.2.2",
+    "typescript": "^5.3.3"
   }
 }
