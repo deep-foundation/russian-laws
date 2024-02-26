@@ -3,7 +3,7 @@ import fs from 'fs';
 import { JSDOM } from 'jsdom';
 
 // функция для чтения и обработки HTML файла
-async function extractPAndSaveToFile(htmlFilePath, outputFilePath) {
+async function extractPAndSaveToFile(htmlFilePath: string, outputFilePath: string) {
     const htmlContent = fs.readFileSync(htmlFilePath, 'utf8');
     const dom = new JSDOM(htmlContent);
     const paragraphs = dom.window.document.querySelectorAll('p');
