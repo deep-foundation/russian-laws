@@ -1,6 +1,6 @@
 import { containTypeLinkId } from "./html-to-json.js";
 
-export function rebuildHtmlFromDeepLinks(deep, rootId) {
+export function rebuildHtmlFromDeepLinks({ deep, rootId }: { deep; rootId; }) {
     let htmlContent = "";
 
     const sectionLinks = deep.minilinks.byId[rootId].outByType[containTypeLinkId];

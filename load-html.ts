@@ -50,7 +50,7 @@ let html = '';
 
 const url = `http://pravo.gov.ru/proxy/ips/?doc_itself=&nd=${options.sourceDocumentId}&fulltext=1`;
 
-function transformHtml(html) {
+function transformHtml({ html }: { html; }) {
   html = html.replace(/^.*<div\s*id="text_content"\s*>\s*/s, '');
   html = html.replace(/\s*<\/div>\s*<\/div>\s*<\/body>\s*<\/html>\s*$/s, '');
   html = html.replaceAll('windows-1251', 'utf-8');
@@ -77,7 +77,7 @@ axios({
 })
   .then(function (response) {
     html = iconv.decode(Buffer.from(response.data), 'win1251');
-    html = transformHtml(html);
+    html = transformHtml({ html });
     saveFile(directory + fileName, html);
     console.log(`Document ${options.name} is loaded`);
   })
