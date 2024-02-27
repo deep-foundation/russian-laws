@@ -3,7 +3,7 @@ import { makeDeepClient, htmlToJson, createLinkOperation, createClauseOperation 
 import { Comment } from "./Comment.js";
 
 
-async function processHtmlAndCreateLinks({ html }: { html: string; }) {
+export async function processHtmlAndCreateLinks({ html }: { html: string; }) {
     let deep = makeDeepClient();
     const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain');
     const commentTypeLinkId = await deep.id('@senchapencha/law', 'Comment');
