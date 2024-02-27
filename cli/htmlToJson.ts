@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import {saveFile} from '../files.js';
 
 import fs from "fs";
