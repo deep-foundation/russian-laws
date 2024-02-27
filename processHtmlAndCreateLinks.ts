@@ -2,12 +2,10 @@ import { SerialOperation } from "@deep-foundation/deeplinks/imports/client.js";
 import { createLinkOperation } from './createLinkOperation.js';
 import { createClauseOperation } from './createClauseOperation.js';
 import { htmlToJson } from "./htmlToJson.js";
-import { makeDeepClient } from "./makeDeepClient.js";
 import { Comment } from "./Comment.js";
 
 
 async function processHtmlAndCreateLinks({ html }: { html: string; }) {
-    let deep = makeDeepClient();
     const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain');
     const commentTypeLinkId = await deep.id('@senchapencha/law', 'Comment');
     const articleTypeLinkId = await deep.id('@senchapencha/law', 'Article');

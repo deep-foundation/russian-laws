@@ -2,9 +2,7 @@ import {saveFile} from './files.js';
 
 import fs from "fs";
 import { rebuildHtmlFromDeepLinks } from "./rebuildHtmlFromDeepLinks.js";
-import { makeDeepClient } from "./makeDeepClient.js";
 
-const deep = makeDeepClient()
 export const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain')
 console.log('containTypeLinkId', containTypeLinkId);
 //
