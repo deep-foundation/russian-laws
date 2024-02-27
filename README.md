@@ -1,3 +1,5 @@
+[![Gitpod](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/deep-foundation/russian-laws)
+
 # russian-law
 
 Html preview: https://konard.github.io/russian-law
