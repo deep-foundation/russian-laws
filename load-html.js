@@ -3,7 +3,7 @@ const iconv = require('iconv-lite');
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const fs = require('fs');
-const path = require('path')
+const path = require('path');
 const { saveFile } = require('./files.js');
 const { program } = require('commander');
 const cheerio = require('cheerio');
@@ -22,7 +22,7 @@ if (!options.name || !options.sourceDocumentId) {
   process.exit(1);
 }
 const fileName = options.name + options.extension
-const directory = options.directory.endsWith('/') ? options.directory : options.directory + '/';  
+const directory = options.directory;
 let html = '';
 
 const url = `http://pravo.gov.ru/proxy/ips/?doc_itself=&nd=${options.sourceDocumentId}&fulltext=1`;
@@ -55,7 +55,7 @@ axios({
   .then(function (response) {
     html = iconv.decode(Buffer.from(response.data), 'win1251');
     html = transformHtml(html);
-    saveFile(directory + fileName, html);
+    saveFile(path.join(directory, fileName), html);
     console.log(`Document ${options.name} is loaded`);
   })
   .catch(function (error) {
