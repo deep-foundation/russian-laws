@@ -30,6 +30,12 @@ const cliOptions = yargs(hideBin(process.argv))
       description: "Should use SSL",
       type: "boolean",
     },
+    output: {
+      alias: "o",
+      description: "Output file path",
+      type: "string",
+      default: 'rebuilt.html'
+    },
   })
   .strict()
   .parseSync();
@@ -61,6 +67,6 @@ deep.select({
     deep.minilinks.apply(result.data);
     const html = rebuildHtmlFromDeepLinks({ deep, rootId: 20203 });
 
-    saveFile({ filePath: 'rebuilt.html', content: html });
+    saveFile({ filePath: cliOptions.output, content: html });
 
 });
