@@ -5,7 +5,7 @@ import { htmlToJson } from "./htmlToJson.js";
 import { Comment } from "./Comment.js";
 
 
-async function processHtmlAndCreateLinks({deep, html }: {deep: DeepClient; html: string; }) {
+export async function processHtmlAndCreateLinks({deep, html }: {deep: DeepClient; html: string; }) {
     const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain');
     const commentTypeLinkId = await deep.id('@senchapencha/law', 'Comment');
     const articleTypeLinkId = await deep.id('@senchapencha/law', 'Article');
