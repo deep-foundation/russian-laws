@@ -1,9 +1,30 @@
-import {JSDOM} from "jsdom";
-import {saveFile} from './files.js';
-
-import {generateApolloClient} from "@deep-foundation/hasura/client.js";
-import {DeepClient, parseJwt} from "@deep-foundation/deeplinks/imports/client.js";
+import { JSDOM } from "jsdom";
+import { saveFile } from './files.js';
+import { program } from 'commander';
+import path from 'path';
+import { generateApolloClient } from "@deep-foundation/hasura/client.js";
+import { DeepClient, parseJwt } from "@deep-foundation/deeplinks/imports/client.js";
 import fs from "fs";
+
+program
+    .option('--source-directory <type>', 'Source directory', './data/html')
+    .option('--target-directory <type>', 'Target directory', './data/json')
+    .option('--source-file-name <type>', 'Source file name (required)')
+    .option('--target-file-name <type>', 'Target file name')
+    .option('--source-file-extension <type>', 'Source file extension', '.html')
+    .option('--target-file-extension <type>', 'Target file extension', '.json')
+    .parse(process.argv);
+
+const options = program.opts();
+if (!options.sourceFileName) {
+    console.log('--source-file-name is required');
+    process.exit(1);
+}
+const sourceFileName = options.sourceFileName + options.sourceFileExtension;
+const sourceDirectory = options.sourceDirectory;
+const targetFileName = (options.targetFileName ? options.targetFileName : options.sourceFileName) + options.targetFileExtension;
+const targetDirectory = options.targetDirectory;
+
 // Преобразование HTML к JSON
 
 const makeDeepClient = () => {
@@ -19,8 +40,7 @@ const makeDeepClient = () => {
         token,
     });
 
-
-    const deepClient = new DeepClient({ apolloClient, linkId, token});
+    const deepClient = new DeepClient({ apolloClient, linkId, token });
     return deepClient;
 }
 
@@ -117,7 +137,7 @@ function htmlToJson(html) {
 }
 
 
-function createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containTypeLinkId ) {
+function createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containTypeLinkId) {
     return {
         table: 'links',
         type: 'insert',
@@ -134,7 +154,7 @@ function createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containT
     };
 }
 
-async function processHtmlAndCreateLinks(html) {
+async function processHtmlAndCreateLinks(json) {
     let deep = makeDeepClient();
     const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain');
     const commentTypeLinkId = await deep.id('@senchapencha/law', 'Comment');
@@ -149,8 +169,6 @@ async function processHtmlAndCreateLinks(html) {
     console.log('sectionTypeLinkId', sectionTypeLinkId);
     console.log('chapterTypeLinkId', chapterTypeLinkId);
     console.log('clauseTypeLinkId', clauseTypeLinkId);
-
-    const json = htmlToJson(html);
 
     let count = 0;
     json.sections.forEach(section => {
@@ -212,7 +230,6 @@ async function processHtmlAndCreateLinks(html) {
 }
 
 function createLinkOperation(linkId, type, contain, title, deep, parentId = 19750) {
-
     return {
         table: 'links',
         type: 'insert',
@@ -258,7 +275,7 @@ function processDeepLinks(deep, rootId) {
                 console.log(`  Article ID: ${articleId}`);
                 console.log(`  Article Title: ${articleTitle}`);
                 const clauseLinks = deep.minilinks.byId[articleId].outByType[containTypeLinkId];
-                if (clauseLinks !== undefined){
+                if (clauseLinks !== undefined) {
                     clauseLinks.forEach(clauseLink => {
                         const clauseId = clauseLink.id;
                         const clauseTitle = clauseLink.string.value;
@@ -298,20 +315,21 @@ function rebuildHtmlFromDeepLinks(deep, rootId) {
     return `<html><body>${htmlContent}</body></html>`;
 }
 
+let html = fs.readFileSync(path.join(sourceDirectory, sourceFileName), 'utf8');
+let json = htmlToJson(html);
+saveFile(path.join(targetDirectory, targetFileName), JSON.stringify(json, null, 2));
 
-const deep = makeDeepClient()
-const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain')
-console.log('containTypeLinkId', containTypeLinkId);
-//
-// let html = fs.readFileSync('./data/html/102110364.html', 'utf8');
-// let result = htmlToJson(html);
-// saveFile('./data/json/102110364.json', JSON.stringify(result, null, 2));
-// processHtmlAndCreateLinks(html);
-getLinksUp(deep, 20203).then((result) => {
-    deep.minilinks.apply(result.data);
-    const html = rebuildHtmlFromDeepLinks(deep, 20203);
+// const deep = makeDeepClient()
+// const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain')
+// console.log('containTypeLinkId', containTypeLinkId);
 
-    saveFile('rebuilt.html', html);
+// processHtmlAndCreateLinks(json);
 
-});
+// getLinksUp(deep, 20203).then((result) => {
+//     deep.minilinks.apply(result.data);
+//     const html = rebuildHtmlFromDeepLinks(deep, 20203);
+
+//     saveFile('rebuilt.html', html);
+
+// });
 
