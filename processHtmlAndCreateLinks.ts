@@ -2,7 +2,7 @@ import { SerialOperation } from "@deep-foundation/deeplinks/imports/client.js";
 import { makeDeepClient, htmlToJson, createLinkOperation, createClauseOperation } from "./html-to-json.js";
 
 
-async function processHtmlAndCreateLinks(html) {
+async function processHtmlAndCreateLinks({ html }: { html; }) {
     let deep = makeDeepClient();
     const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain');
     const commentTypeLinkId = await deep.id('@senchapencha/law', 'Comment');
@@ -18,7 +18,7 @@ async function processHtmlAndCreateLinks(html) {
     console.log('chapterTypeLinkId', chapterTypeLinkId);
     console.log('clauseTypeLinkId', clauseTypeLinkId);
 
-    const json = htmlToJson(html);
+    const json = htmlToJson({ html });
 
     let count = 0;
     json.sections.forEach(section => {
@@ -58,7 +58,7 @@ async function processHtmlAndCreateLinks(html) {
         if (!sectionLinkId) {
             throw new Error('No reserved id');
         }
-        operations.push(createLinkOperation(sectionLinkId, sectionTypeLinkId, containTypeLinkId, section.title, deep));
+        operations.push(createLinkOperation({ linkId: sectionLinkId, type: sectionTypeLinkId, contain: containTypeLinkId, title: section.title, deep }));
         processComments(section.comments, sectionLinkId);
 
         section.chapters.forEach(chapter => {
@@ -66,7 +66,7 @@ async function processHtmlAndCreateLinks(html) {
             if (!chapterLinkId) {
                 throw new Error('No reserved id');
             }
-            operations.push(createLinkOperation(chapterLinkId, chapterTypeLinkId, containTypeLinkId, chapter.title, deep, sectionLinkId));
+            operations.push(createLinkOperation({ linkId: chapterLinkId, type: chapterTypeLinkId, contain: containTypeLinkId, title: chapter.title, deep, parentId: sectionLinkId }));
             processComments(chapter.comments, chapterLinkId);
 
             chapter.articles.forEach(article => {
@@ -74,11 +74,11 @@ async function processHtmlAndCreateLinks(html) {
                 if (!articleLinkId) {
                     throw new Error('No reserved id');
                 }
-                operations.push(createLinkOperation(articleLinkId, articleTypeLinkId, containTypeLinkId, article.title, deep, chapterLinkId));
+                operations.push(createLinkOperation({ linkId: articleLinkId, type: articleTypeLinkId, contain: containTypeLinkId, title: article.title, deep, parentId: chapterLinkId }));
                 processComments(article.comments, articleLinkId);
 
                 article.clauses.forEach(clause => {
-                    operations.push(createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containTypeLinkId));
+                    operations.push(createClauseOperation({ clause, articleLinkId, clauseTypeLinkId, containTypeLinkId }));
                 });
             });
         });

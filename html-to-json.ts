@@ -30,7 +30,7 @@ type Section = { title: string, chapters: Array<Chapter> ,comments: Array<any> }
 type Chapter = { title: string, articles: Array<Article>, comments: Array<any> } | null
 type Article = { title: string, clauses: Array<string> , comments: Array<any>} | null
 
-export function htmlToJson(html) {
+export function htmlToJson({ html }: { html; }) {
     const result: {preamble: Array<string>; sections: Array<any>, preambleComments: Array<any>} = { preamble: [], sections: [],preambleComments: [] };
     const dom = new JSDOM(html);
     const paragraphs = [...dom.window.document.querySelectorAll("p")];
@@ -126,7 +126,7 @@ export function htmlToJson(html) {
 }
 
 
-export function createClauseOperation(clause, articleLinkId, clauseTypeLinkId, containTypeLinkId ) {
+export function createClauseOperation({ clause, articleLinkId, clauseTypeLinkId, containTypeLinkId }: { clause; articleLinkId; clauseTypeLinkId; containTypeLinkId; }) {
     return createSerialOperation({
         table: 'links',
         type: 'insert',
@@ -143,7 +143,7 @@ export function createClauseOperation(clause, articleLinkId, clauseTypeLinkId, c
     });
 }
 
-export function createLinkOperation(linkId: number, type: number, contain: number, title: string, deep: DeepClient, parentId = 19750) {
+export function createLinkOperation({ linkId, type, contain, title, deep, parentId = 19750 }: { linkId: number; type: number; contain: number; title: string; deep: DeepClient; parentId?: number; }) {
 
     return createSerialOperation({
         table: 'links',
@@ -165,7 +165,7 @@ export function createLinkOperation(linkId: number, type: number, contain: numbe
 
 
 
-function processDeepLinks(deep, rootId) {
+function processDeepLinks({ deep, rootId }: { deep; rootId; }) {
     // Получаем все связи типа 'Contain' для корневого узла
     const sectionLinks = deep.minilinks.byId[rootId].outByType[containTypeLinkId];
 
@@ -212,8 +212,8 @@ deep.select({
     }
 }).then((result) => {
     deep.minilinks.apply(result.data);
-    const html = rebuildHtmlFromDeepLinks(deep, 20203);
+    const html = rebuildHtmlFromDeepLinks({ deep, rootId: 20203 });
 
-    saveFile('rebuilt.html', html);
+    saveFile({ filePath: 'rebuilt.html', content: html });
 
 });

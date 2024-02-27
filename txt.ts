@@ -3,7 +3,7 @@ import fs from 'fs';
 import { JSDOM } from 'jsdom';
 
 // функция для чтения и обработки HTML файла
-async function extractPAndSaveToFile(htmlFilePath: string, outputFilePath: string) {
+async function extractPAndSaveToFile({ htmlFilePath, outputFilePath }: { htmlFilePath: string; outputFilePath: string; }) {
     const htmlContent = fs.readFileSync(htmlFilePath, 'utf8');
     const dom = new JSDOM(htmlContent);
     const paragraphs = dom.window.document.querySelectorAll('p');
@@ -17,4 +17,4 @@ async function extractPAndSaveToFile(htmlFilePath: string, outputFilePath: strin
 const htmlFilePath = 'data/html/102041891.html'; // Путь к вашему HTML файлу
 const outputFilePath = 'output.txt'; // Путь к файлу для сохранения
 
-extractPAndSaveToFile(htmlFilePath, outputFilePath);
+extractPAndSaveToFile({ htmlFilePath, outputFilePath });
