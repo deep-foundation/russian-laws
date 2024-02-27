@@ -1,5 +1,8 @@
 import { SerialOperation } from "@deep-foundation/deeplinks/imports/client.js";
-import { makeDeepClient, htmlToJson, createLinkOperation, createClauseOperation } from "./html-to-json.js";
+import { createLinkOperation } from './createLinkOperation.js';
+import { createClauseOperation } from './createClauseOperation.js';
+import { htmlToJson } from "./htmlToJson.js";
+import { makeDeepClient } from "./makeDeepClient.js";
 import { Comment } from "./Comment.js";
 
 
