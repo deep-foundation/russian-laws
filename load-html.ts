@@ -1,13 +1,13 @@
-const axios = require('axios');
-const iconv = require('iconv-lite');
-const jsdom = require("jsdom");
+import axios from 'axios';
+import iconv from 'iconv-lite';
+import jsdom from "jsdom";
 const { JSDOM } = jsdom;
-const fs = require('fs');
-const path = require('path')
-const { saveFile } = require('./files.js');
-const { program } = require('commander');
-const cheerio = require('cheerio');
-const beautify = require('js-beautify').html;
+import fs from 'fs';
+import path from 'path';
+import { saveFile } from './files.js';
+import { program } from 'commander';
+import cheerio from 'cheerio';
+import {html as beautify} from 'js-beautify';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
