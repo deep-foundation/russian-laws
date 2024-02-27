@@ -1,5 +1,5 @@
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
-import { containTypeLinkId } from "./html-to-json.js";
+import { containTypeLinkId } from "./cli/htmlToJson.js";
 
 export function rebuildHtmlFromDeepLinks({ deep, rootId }: { deep: DeepClient; rootId: number; }) {
     let htmlContent = "";

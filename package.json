@@ -22,9 +22,12 @@
   "homepage": "https://github.com/Konard/russian-law#readme",
   "dependencies": {
     "@deep-foundation/deeplinks": "^0.0.322",
+    "@types/dotenv": "^8.2.0",
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12",
     "commander": "^11.1.0",
+    "dotenv": "^16.4.5",
+    "envalid": "^8.0.0",
     "fs-extra": "^11.2.0",
     "iconv-lite": "^0.6.3",
     "js-beautify": "^1.14.11",
