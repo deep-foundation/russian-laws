@@ -6,6 +6,10 @@ import {DeepClient, parseJwt} from "@deep-foundation/deeplinks/imports/client.js
 import {createSerialOperation} from "@deep-foundation/deeplinks/imports/gql/index.js";
 import fs from "fs";
 import { rebuildHtmlFromDeepLinks } from "./rebuildHtmlFromDeepLinks.js";
+import { Section } from "./Section.js";
+import { Chapter } from "./Chapter.js";
+import { Article } from "./Article.js";
+import { Comment } from "./Comment.js";
 // Преобразование HTML к JSON
 
 export const makeDeepClient = () => {
@@ -26,18 +30,14 @@ export const makeDeepClient = () => {
     return deepClient;
 }
 
-type Section = { title: string, chapters: Array<Chapter> ,comments: Array<any> } | null
-type Chapter = { title: string, articles: Array<Article>, comments: Array<any> } | null
-type Article = { title: string, clauses: Array<string> , comments: Array<any>} | null
-
-export function htmlToJson({ html }: { html; }) {
-    const result: {preamble: Array<string>; sections: Array<any>, preambleComments: Array<any>} = { preamble: [], sections: [],preambleComments: [] };
+export function htmlToJson({ html }: { html: string; }) {
+    const result: {preamble: Array<string>; sections: Array<Section>, preambleComments: Array<Comment>} = { preamble: [], sections: [],preambleComments: [] };
     const dom = new JSDOM(html);
     const paragraphs = [...dom.window.document.querySelectorAll("p")];
 
-    let currentSection:  Section= null;
-    let currentChapter: Chapter = null;
-    let currentArticle: Article = null;
+    let currentSection:  Section|null= null;
+    let currentChapter: Chapter|null = null;
+    let currentArticle: Article|null = null;
     let preambleMode = true;
 
     for (const p of paragraphs) {
@@ -94,7 +94,7 @@ export function htmlToJson({ html }: { html; }) {
                     }
                     break;
                 case "comment":
-                    const comment = { text: htmlContent };
+                    const comment: Comment = { text: htmlContent };
                     if (currentArticle) {
                         currentArticle.comments.push(comment);
                     } else if (currentChapter) {
@@ -126,7 +126,7 @@ export function htmlToJson({ html }: { html; }) {
 }
 
 
-export function createClauseOperation({ clause, articleLinkId, clauseTypeLinkId, containTypeLinkId }: { clause; articleLinkId; clauseTypeLinkId; containTypeLinkId; }) {
+export function createClauseOperation({ clause, articleLinkId, clauseTypeLinkId, containTypeLinkId }: { clause: string; articleLinkId: number; clauseTypeLinkId: number; containTypeLinkId: number; }) {
     return createSerialOperation({
         table: 'links',
         type: 'insert',
@@ -165,7 +165,7 @@ export function createLinkOperation({ linkId, type, contain, title, deep, parent
 
 
 
-function processDeepLinks({ deep, rootId }: { deep; rootId; }) {
+function processDeepLinks({ deep, rootId }: { deep: DeepClient; rootId: number; }) {
     // Получаем все связи типа 'Contain' для корневого узла
     const sectionLinks = deep.minilinks.byId[rootId].outByType[containTypeLinkId];
 
