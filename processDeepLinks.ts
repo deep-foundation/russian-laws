@@ -1,5 +1,5 @@
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
-import { containTypeLinkId } from './cli/htmlToJson.js';
+import { containTypeLinkId } from './cli/export.js';
 
 function processDeepLinks({ deep, rootId }: { deep: DeepClient; rootId: number; }) {
     // Получаем все связи типа 'Contain' для корневого узла
