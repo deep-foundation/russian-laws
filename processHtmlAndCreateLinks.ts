@@ -1,8 +1,9 @@
 import { SerialOperation } from "@deep-foundation/deeplinks/imports/client.js";
 import { makeDeepClient, htmlToJson, createLinkOperation, createClauseOperation } from "./html-to-json.js";
+import { Comment } from "./Comment.js";
 
 
-async function processHtmlAndCreateLinks({ html }: { html; }) {
+async function processHtmlAndCreateLinks({ html }: { html: string; }) {
     let deep = makeDeepClient();
     const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain');
     const commentTypeLinkId = await deep.id('@senchapencha/law', 'Comment');
@@ -34,7 +35,7 @@ async function processHtmlAndCreateLinks({ html }: { html; }) {
     const reservedIds = await deep.reserve(count);
 
     let operations: Array<SerialOperation> = [];
-    const processComments = (comments, parentLinkId) => {
+    const processComments = (comments: Array<Comment>, parentLinkId: number) => {
         comments?.forEach(comment => {
             operations.push({
                 table: 'links',
