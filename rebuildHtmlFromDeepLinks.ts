@@ -1,10 +1,10 @@
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
-import { containTypeLinkId } from "./cli/export.js";
 
 export function rebuildHtmlFromDeepLinks({ deep, rootId }: { deep: DeepClient; rootId: number; }) {
     let htmlContent = "";
 
-    const sectionLinks = deep.minilinks.byId[rootId].outByType[containTypeLinkId];
+const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
+const sectionLinks = deep.minilinks.byId[rootId].outByType[containTypeLinkId];
     sectionLinks.forEach(sectionLink => {
         const sectionId = sectionLink.to.id;
         const sectionTitle = sectionLink.string.value;

@@ -46,7 +46,7 @@ const apolloClient = generateApolloClient({
   });
   const deep = new DeepClient({ deep: guestDeep, ...adminLoginResult });
 
-export const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain')
+const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
 console.log('containTypeLinkId', containTypeLinkId);
 //
 // let html = fs.readFileSync('./data/html/102110364.html', 'utf8');
