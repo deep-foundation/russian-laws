@@ -45,7 +45,7 @@ const options = yargs(hideBin(process.argv))
   .parseSync();
 
 const fileName = options.name + options.extension
-const directory = options.directory.endsWith('/') ? options.directory : options.directory + '/';  
+const directory = options.directory;
 let html = '';
 
 const url = `http://pravo.gov.ru/proxy/ips/?doc_itself=&nd=${options.sourceDocumentId}&fulltext=1`;
@@ -78,7 +78,7 @@ axios({
   .then(function (response) {
     html = iconv.decode(Buffer.from(response.data), 'win1251');
     html = transformHtml({ html });
-    saveFile({content:html, filePath: directory + fileName});
+    saveFile({content:html, filePath: path.join(directory, fileName)});
     console.log(`Document ${options.name} is loaded`);
   })
   .catch(function (error) {
