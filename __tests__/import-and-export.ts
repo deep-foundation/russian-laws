@@ -1,6 +1,6 @@
 import fsExtra from 'fs-extra'
 import path from 'path'
-import { processHtmlAndCreateLinks } from '../processHtmlAndCreateLinks.js';
+import { processHtmlAndCreateLinks } from '../process-html-and-create-links.js';
 
 it('import and export',  async() => {
   const filePath = path.join('..', 'data', 'html', '102041891');
