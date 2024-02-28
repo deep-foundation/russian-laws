@@ -1,6 +1,6 @@
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
 
-export function linksToHtml({ deep, documentRootId }: { deep: DeepClient; documentRootId: number; }) {
+export function rebuildHtmlFromDeepLinks({ deep, documentRootId }: { deep: DeepClient; documentRootId: number; }) {
     let htmlContent = "";
 
 const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
