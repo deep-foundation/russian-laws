@@ -5,7 +5,7 @@ import { htmlToJson } from "./html-to-json.js";
 import { Comment } from "./comment.js";
 
 
-export async function processHtmlAndCreateLinks({deep, html }: {deep: DeepClient; html: string; }) {
+export async function processHtmlAndCreateLinks({deep, html ,spaceId}: {deep: DeepClient; html: string; spaceId: number }) {
     const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain');
     const commentTypeLinkId = await deep.id('@senchapencha/law', 'Comment');
     const articleTypeLinkId = await deep.id('@senchapencha/law', 'Article');
@@ -60,7 +60,7 @@ export async function processHtmlAndCreateLinks({deep, html }: {deep: DeepClient
         if (!sectionLinkId) {
             throw new Error('No reserved id');
         }
-        operations.push(createLinkOperation({ linkId: sectionLinkId, type: sectionTypeLinkId, contain: containTypeLinkId, title: section.title, deep }));
+        operations.push(createLinkOperation({ linkId: sectionLinkId, type: sectionTypeLinkId, contain: containTypeLinkId, title: section.title, deep,parentId: spaceId }));
         processComments(section.comments, sectionLinkId);
 
         section.chapters.forEach(chapter => {
