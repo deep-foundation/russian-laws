@@ -3,7 +3,7 @@
 import {saveFile} from '../files.js';
 import path from 'path'
 import fs from "fs";
-import { rebuildHtmlFromDeepLinks } from "../rebuild-html-from-deep-links.js";
+import { linksToHtml } from "../links-to-html.js";
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
 import { generateApolloClient } from '@deep-foundation/hasura/client.js';
 import yargs from 'yargs';
@@ -78,6 +78,6 @@ deep.select({
     }
 }).then((result) => {
     deep.minilinks.apply(result.data);
-    const html = rebuildHtmlFromDeepLinks({ deep, documentRootId: 20203 });
+    const html = linksToHtml({ deep, documentRootId: 20203 });
     saveFile({ filePath: path.join(options.targetDirectory, targetFileName), content: html });
 });
