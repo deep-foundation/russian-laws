@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import {saveFile} from '../files.js';
-
+import path from 'path'
 import fs from "fs";
 import { rebuildHtmlFromDeepLinks } from "../rebuild-html-from-deep-links.js";
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
@@ -16,7 +16,7 @@ const env = cleanEnv(process.env, {
   DEEP_TOKEN: str(),
 })
 
-const cliOptions = yargs(hideBin(process.argv))
+const options = yargs(hideBin(process.argv))
   .usage(`$0 [Options]`, `Description of the program`)
   .options({
     "graphql-path": {
@@ -30,19 +30,39 @@ const cliOptions = yargs(hideBin(process.argv))
       description: "Should use SSL",
       type: "boolean",
     },
-    output: {
-      alias: "o",
-      description: "Output file path",
-      type: "string",
-      default: 'rebuilt.html'
+    'source-document-root-id': {
+      alias: "s",
+      description: "Source Document Root ID",
+      type: "number",
+      demandOption: true
     },
+    'target-directory': {
+      alias: "t",
+      description: "Target directory",
+      type: "string",
+      default: './data/html'
+    },
+    'target-file-name': {
+      alias: "n",
+      description: "Target file name",
+      type: "string",
+      demandOption: true
+    },
+    'target-file-extension': {
+      alias: "e",
+      description: "Target file extension",
+      type: "string",
+      default: '.html'
+    }
   })
   .strict()
   .parseSync();
 
+  const targetFileName = options.targetFileName + options.targetFileExtension;
+
 const apolloClient = generateApolloClient({
-    path: cliOptions.graphqlPath,
-    ssl: cliOptions.ssl,
+    path: options.graphqlPath,
+    ssl: options.ssl,
   });
   const unloginedDeep = new DeepClient({ apolloClient });
   const guestLoginResult = await unloginedDeep.guest();
@@ -52,21 +72,12 @@ const apolloClient = generateApolloClient({
   });
   const deep = new DeepClient({ deep: guestDeep, ...adminLoginResult });
 
-const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
-console.log('containTypeLinkId', containTypeLinkId);
-//
-// let html = fs.readFileSync('./data/html/102110364.html', 'utf8');
-// let result = htmlToJson(html);
-// saveFile('./data/json/102110364.json', JSON.stringify(result, null, 2));
-// processHtmlAndCreateLinks(html);
 deep.select({
     up: {
         parent_id: 20203,
     }
 }).then((result) => {
     deep.minilinks.apply(result.data);
-    const html = rebuildHtmlFromDeepLinks({ deep, rootId: 20203 });
-
-    saveFile({ filePath: cliOptions.output, content: html });
-
+    const html = rebuildHtmlFromDeepLinks({ deep, documentRootId: 20203 });
+    saveFile({ filePath: path.join(options.targetDirectory, targetFileName), content: html });
 });
