@@ -4,7 +4,7 @@ import jsdom from "jsdom";
 const { JSDOM } = jsdom;
 import fs from 'fs';
 import path from 'path';
-import { saveFile } from './files.js';
+import { saveFile } from '../files.js';
 import { program } from 'commander';
 import cheerio from 'cheerio';
 import {html as beautify} from 'js-beautify';
