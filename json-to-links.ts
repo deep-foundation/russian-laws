@@ -3,9 +3,10 @@ import { createLinkOperation } from './create-link-operation.js';
 import { createClauseOperation } from './create-clause-operation.js';
 import { htmlToJson } from "./html-to-json.js";
 import { Comment } from "./comment.js";
+import { LawPage } from "./law-page.js";
 
 
-export async function processHtmlAndCreateLinks({deep, html ,spaceId}: {deep: DeepClient; html: string; spaceId: number }) {
+export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json: LawPage; spaceId: number }) {
     const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain');
     const commentTypeLinkId = await deep.id('@senchapencha/law', 'Comment');
     const articleTypeLinkId = await deep.id('@senchapencha/law', 'Article');
@@ -19,8 +20,6 @@ export async function processHtmlAndCreateLinks({deep, html ,spaceId}: {deep: De
     console.log('sectionTypeLinkId', sectionTypeLinkId);
     console.log('chapterTypeLinkId', chapterTypeLinkId);
     console.log('clauseTypeLinkId', clauseTypeLinkId);
-
-    const json = htmlToJson({ html });
 
     let count = 0;
     json.sections.forEach(section => {
