@@ -1,8 +1,8 @@
 import { JSDOM } from "jsdom";
-import { Section } from "./Section.js";
-import { Chapter } from "./Chapter.js";
-import { Article } from "./Article.js";
-import { Comment } from "./Comment.js";
+import { Section } from "./section.js";
+import { Chapter } from "./chapter.js";
+import { Article } from "./article.js";
+import { Comment } from "./comment.js";
 
 export function htmlToJson({ html }: { html: string; }) {
     const result: { preamble: Array<string>; sections: Array<Section>; preambleComments: Array<Comment>; } = { preamble: [], sections: [], preambleComments: [] };

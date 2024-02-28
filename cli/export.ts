@@ -3,7 +3,7 @@
 import {saveFile} from '../files.js';
 
 import fs from "fs";
-import { rebuildHtmlFromDeepLinks } from "../rebuildHtmlFromDeepLinks.js";
+import { rebuildHtmlFromDeepLinks } from "../rebuild-html-from-deep-links.js";
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
 import { generateApolloClient } from '@deep-foundation/hasura/client.js';
 import yargs from 'yargs';

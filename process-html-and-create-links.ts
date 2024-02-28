@@ -1,8 +1,8 @@
 import { DeepClient, SerialOperation } from "@deep-foundation/deeplinks/imports/client.js";
-import { createLinkOperation } from './createLinkOperation.js';
-import { createClauseOperation } from './createClauseOperation.js';
-import { htmlToJson } from "./htmlToJson.js";
-import { Comment } from "./Comment.js";
+import { createLinkOperation } from './create-link-operation.js';
+import { createClauseOperation } from './create-clause-operation.js';
+import { htmlToJson } from "./html-to-json.js";
+import { Comment } from "./comment.js";
 
 
 export async function processHtmlAndCreateLinks({deep, html }: {deep: DeepClient; html: string; }) {
