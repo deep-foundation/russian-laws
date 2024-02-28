@@ -12,13 +12,14 @@ import dotenv from 'dotenv'
 dotenv.config()
 import {cleanEnv, str} from 'envalid'
 import { htmlToJson } from '../html-to-json.js';
-import { processHtmlAndCreateLinks } from '../process-html-and-create-links.js';
+import { htmlToLinks } from '../html-to-links.js';
+import path from 'path'
 
 const env = cleanEnv(process.env, {
   DEEP_TOKEN: str(),
 })
 
-const cliOptions = yargs(hideBin(process.argv))
+const options = yargs(hideBin(process.argv))
   .usage(`$0 [Options]`, `Description of the program`)
   .options({
     "graphql-path": {
@@ -32,19 +33,37 @@ const cliOptions = yargs(hideBin(process.argv))
       description: "Should use SSL",
       type: "boolean",
     },
-    input: {
-      alias: "i",
-      description: "Input file path",
+    'source-directory': {
+      alias: "s",
+      description: "Source directory",
       type: "string",
-      demandOption: true,
+      default: './data/html'
     },
+    'source-file-name': {
+      alias: "n",
+      description: "Source file name",
+      type: "string",
+      demandOption: true
+    },
+    'source-file-extension': {
+      alias: "e",
+      description: "Source file extension",
+      type: "string",
+      default: '.html'
+    },
+    'target-space-id': {
+      alias: "t",
+      description: "Target space id",
+      type: "number",
+      demandOption: true
+    }
   })
   .strict()
   .parseSync();
 
 const apolloClient = generateApolloClient({
-    path: cliOptions.graphqlPath,
-    ssl: cliOptions.ssl,
+    path: options.graphqlPath,
+    ssl: options.ssl,
   });
   const unloginedDeep = new DeepClient({ apolloClient });
   const guestLoginResult = await unloginedDeep.guest();
@@ -57,6 +76,7 @@ const apolloClient = generateApolloClient({
 const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
 console.log('containTypeLinkId', containTypeLinkId);
 
-let html = fs.readFileSync(cliOptions.input, 'utf8');
-processHtmlAndCreateLinks({deep,html});
+const sourceFullPath = path.join(options.sourceDirectory, options.sourceFileName);
+let html = fs.readFileSync(sourceFullPath, 'utf8');
+htmlToLinks({deep,html,spaceId: options.targetSpaceId});
 
