@@ -12,8 +12,6 @@ import { bool, cleanEnv, str } from 'envalid';
 import dotenv from 'dotenv'
 dotenv.config({path: '.env.tests.local'});
 
-console.log(process.env)
-
 const env = cleanEnv(process.env, {
   GRAPHQL_PATH: str({desc: "Path to GraphQL endpoint"}),
   SSL: bool({
