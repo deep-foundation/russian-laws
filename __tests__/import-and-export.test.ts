@@ -54,7 +54,7 @@ beforeAll(async () => {
 })
 
 it('import and export',  async() => {
-  const filePath = path.join('..', 'data', 'html', '102041891');
+  const filePath = path.resolve('data', 'html', '102041891.html');
   log({filePath})
   const initialHtml = fsExtra.readFileSync(filePath, {encoding: 'utf8'});
   log({initialHtml})
