@@ -8,11 +8,11 @@ import { LawPage } from "./law-page.js";
 
 export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json: LawPage; spaceId: number }) {
     const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain');
-    const commentTypeLinkId = await deep.id('@senchapencha/law', 'Comment');
-    const articleTypeLinkId = await deep.id('@senchapencha/law', 'Article');
-    const sectionTypeLinkId = await deep.id('@senchapencha/law', 'Section');
-    const chapterTypeLinkId = await deep.id('@senchapencha/law', 'Chapter');
-    const clauseTypeLinkId = await deep.id('@senchapencha/law', 'Clause');
+    const commentTypeLinkId = await deep.id('@deep-foundation/law', 'Comment');
+    const articleTypeLinkId = await deep.id('@deep-foundation/law', 'Article');
+    const sectionTypeLinkId = await deep.id('@deep-foundation/law', 'Section');
+    const chapterTypeLinkId = await deep.id('@deep-foundation/law', 'Chapter');
+    const clauseTypeLinkId = await deep.id('@deep-foundation/law', 'Clause');
 
     console.log('containTypeLinkId', containTypeLinkId);
     console.log('commentTypeLinkId', commentTypeLinkId);
