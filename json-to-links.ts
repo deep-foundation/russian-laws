@@ -1,9 +1,9 @@
-import { DeepClient, SerialOperation } from "@deep-foundation/deeplinks/imports/client.js";
+import type { DeepClient, SerialOperation } from "@deep-foundation/deeplinks/imports/client.js";
 import { createLinkOperation } from './create-link-operation.js';
 import { createClauseOperation } from './create-clause-operation.js';
 import { htmlToJson } from "./html-to-json.js";
-import { Comment } from "./comment.js";
-import { LawPage } from "./law-page.js";
+import type { Comment } from "./comment.js";
+import type { LawPage } from "./law-page.js";
 
 
 export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json: LawPage; spaceId: number }) {
