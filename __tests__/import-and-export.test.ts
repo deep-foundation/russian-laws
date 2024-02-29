@@ -8,31 +8,43 @@ import { hideBin } from 'yargs/helpers';
 import {linksToHtml} from '../links-to-html.js'
 import { log } from '../log.js';
 import {expect, test,beforeAll, describe, it} from 'bun:test'
+import { bool, cleanEnv, str } from 'envalid';
+import dotenv from 'dotenv'
+dotenv.config({path: '.env.tests.local'});
 
+console.log(process.env)
 
-const options = yargs(hideBin(process.argv))
-  .usage(`$0 [Options]`, `Description of the program`)
-  .options({
-    "graphql-path": {
-      alias: "gql-p",
-      description: "Path to GraphQL endpoint",
-      type: "string",
-      demandOption: true,
-    },
-    ssl: {
-      alias: "s",
-      description: "Should use SSL",
-      type: "boolean",
-    },
-  })
-  .strict()
-  .parseSync();
+const env = cleanEnv(process.env, {
+  GRAPHQL_PATH: str({desc: "Path to GraphQL endpoint"}),
+  SSL: bool({
+    desc: "Should use SSL",
+    default: true,
+  }),
+});
+
+// const options = yargs(hideBin(process.argv))
+//   .usage(`$0 [Options]`, `Description of the program`)
+//   .options({
+//     "graphql-path": {
+//       alias: "gql-p",
+//       description: "Path to GraphQL endpoint",
+//       type: "string",
+//       demandOption: true,
+//     },
+//     ssl: {
+//       alias: "s",
+//       description: "Should use SSL",
+//       type: "boolean",
+//     },
+//   })
+//   .strict()
+//   .parseSync();
 
 let deep: DeepClient;
 beforeAll(async () => {
   const apolloClient = generateApolloClient({
-    path: options.graphqlPath,
-    ssl: options.ssl,
+    path: env.GRAPHQL_PATH,
+    ssl: env.SSL,
   });
   const unloginedDeep = new DeepClient({ apolloClient });
   const guestLoginResult = await unloginedDeep.guest();
