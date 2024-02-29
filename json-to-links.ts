@@ -34,6 +34,7 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
     });
 
     const reservedIds = await deep.reserve(count);
+    log({reservedIds})
 
     let operations: Array<SerialOperation> = [];
     const processComments = (comments: Array<Comment>, parentLinkId: number) => {
@@ -57,6 +58,7 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
 
     json.sections.forEach(section => {
         const sectionLinkId = reservedIds.pop();
+        log({sectionLinkId})
         if (!sectionLinkId) {
             throw new Error('No reserved id');
         }
@@ -65,6 +67,7 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
 
         section.chapters.forEach(chapter => {
             const chapterLinkId = reservedIds.pop();
+            log({chapterLinkId})
             if (!chapterLinkId) {
                 throw new Error('No reserved id');
             }
@@ -73,6 +76,7 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
 
             chapter.articles.forEach(article => {
                 const articleLinkId = reservedIds.pop();
+                log({articleLinkId})
                 if (!articleLinkId) {
                     throw new Error('No reserved id');
                 }
@@ -87,5 +91,6 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
     });
 
     const result = await deep.serial({ operations });
+    log({result})
     return result;
 }
