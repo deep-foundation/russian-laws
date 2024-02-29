@@ -4,6 +4,7 @@ import { createClauseOperation } from './create-clause-operation.js';
 import { htmlToJson } from "./html-to-json.js";
 import type { Comment } from "./comment.js";
 import type { LawPage } from "./law-page.js";
+import { log } from "./log.js";
 
 
 export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json: LawPage; spaceId: number }) {
@@ -14,12 +15,12 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
     const chapterTypeLinkId = await deep.id('@deep-foundation/law', 'Chapter');
     const clauseTypeLinkId = await deep.id('@deep-foundation/law', 'Clause');
 
-    console.log('containTypeLinkId', containTypeLinkId);
-    console.log('commentTypeLinkId', commentTypeLinkId);
-    console.log('articleTypeLinkId', articleTypeLinkId);
-    console.log('sectionTypeLinkId', sectionTypeLinkId);
-    console.log('chapterTypeLinkId', chapterTypeLinkId);
-    console.log('clauseTypeLinkId', clauseTypeLinkId);
+    log('containTypeLinkId', containTypeLinkId);
+    log('commentTypeLinkId', commentTypeLinkId);
+    log('articleTypeLinkId', articleTypeLinkId);
+    log('sectionTypeLinkId', sectionTypeLinkId);
+    log('chapterTypeLinkId', chapterTypeLinkId);
+    log('clauseTypeLinkId', clauseTypeLinkId);
 
     let count = 0;
     json.sections.forEach(section => {

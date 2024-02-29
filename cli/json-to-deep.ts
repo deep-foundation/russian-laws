@@ -75,7 +75,7 @@ const apolloClient = generateApolloClient({
   const deep = new DeepClient({ deep: guestDeep, ...adminLoginResult });
 
 const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
-console.log('containTypeLinkId', containTypeLinkId);
+log('containTypeLinkId', containTypeLinkId);
 
 const sourceFullPath = path.join(options.sourceDirectory, options.sourceFileName);
 let json = JSON.parse(fs.readFileSync(sourceFullPath, 'utf8'));
