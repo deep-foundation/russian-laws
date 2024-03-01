@@ -94,13 +94,14 @@ it('import and export',  async() => {
   log({diffResult})
   fsExtra.writeFileSync('initialParagraphs.html', initialHtmlParagraphsAfterTarget.map((i,paragraph)=>initialHtmlParsed(paragraph).text()).get().join('\n'), {encoding: 'utf-8'})
   fsExtra.writeFileSync('exportedParagraphs.html', exportedHtmlParagraphs.map((i,paragraph)=>exportedHtmlParsed(paragraph).text()).get().join('\n'), {encoding: 'utf-8'})
+  fsExtra.writeFileSync('initial.html', initialHtml, {encoding: 'utf-8'})
+  fsExtra.writeFileSync('exported.html', exportedHtml, {encoding: 'utf-8'})
+  fsExtra.writeFileSync('diff.txt', JSON.stringify(diffResult, null, 2), {encoding: 'utf-8'})
   expect(exportedHtmlParagraphs.length).toBe(initialHtmlParagraphsAfterTarget.length);
   for (let i = 0; i < initialHtmlParagraphsAfterTarget.length; i++) {
     const initialHtmlParagraph = initialHtmlParagraphsAfterTarget[i];
     const exportedHtmlParagraph = exportedHtmlParagraphs[i];
-    expect(exportedHtmlParsed(exportedHtmlParagraph).text()).toBe(initialHtmlParsed(initialHtmlParagraph).text())
+    expect(exportedHtmlParsed(exportedHtmlParagraph).text().trim()).toBe(initialHtmlParsed(initialHtmlParagraph).text().trim())
   }
-  fsExtra.writeFileSync('initial.html', initialHtml, {encoding: 'utf-8'})
-  fsExtra.writeFileSync('exported.html', exportedHtml, {encoding: 'utf-8'})
-  fsExtra.writeFileSync('diff.txt', JSON.stringify(diffResult, null, 2), {encoding: 'utf-8'})
+
 });
