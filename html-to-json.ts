@@ -28,7 +28,7 @@ export function htmlToJson({ html }: { html: string; }) {
             result.preamble.push(htmlContent);
             continue;
         }
-        if (p.classList.contains("H") || p.classList.contains("T") || p.classList.contains("I")) {
+        if (p.classList.contains("H") || p.classList.contains("T") || (text.startsWith("(") || p.classList.contains("I"))) {
             preambleMode = false;
             let paragraphType;
             if (text.startsWith("РАЗДЕЛ") || text.startsWith("Раздел")) paragraphType = "section";
