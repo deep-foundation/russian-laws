@@ -90,6 +90,7 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
         });
     });
 
+    log({operations})
     const result = await deep.serial({ operations });
     log({result})
     return result;
