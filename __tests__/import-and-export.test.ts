@@ -11,6 +11,7 @@ import {expect, test,beforeAll, describe, it} from 'bun:test'
 import { bool, cleanEnv, str } from 'envalid';
 import dotenv from 'dotenv'
 dotenv.config({path: '.env.tests.local'});
+import {diffLines} from 'diff';
 
 const env = cleanEnv(process.env, {
   GRAPHQL_PATH: str({desc: "Path to GraphQL endpoint"}),
@@ -72,4 +73,6 @@ it('import and export',  async() => {
   deep.minilinks.apply(linksDownToDocument);
   const exportedHtml = linksToHtml({deep,documentRootId: documentLinkId})
   log({exportedHtml})
+  const diffResult = diffLines(initialHtml, exportedHtml)
+  log({diffResult})
 });
