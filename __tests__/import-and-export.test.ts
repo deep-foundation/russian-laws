@@ -64,6 +64,12 @@ it('import and export',  async() => {
   log({documentLinkId})
   const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,spaceId: documentLinkId})
   log({processHtmlAndCreateLinksResult})
+  const {data: linksDownToDocument} = await deep.select({
+    up: {
+        parent_id: documentLinkId,
+    }
+  })
+  deep.minilinks.apply(linksDownToDocument);
   const exportedHtml = linksToHtml({deep,documentRootId: documentLinkId})
   log({exportedHtml})
 });
