@@ -18,23 +18,38 @@ export function linksToHtml({ deep, documentRootId }: { deep: DeepClient; docume
 
         const sectionLink = deep.minilinks.byId[sectionLinkId];
         log({sectionLink})
-        const containForArticleLinkArray = sectionLink.outByType[containTypeLinkId];
-        log({containForArticleLinkArray})
-        containForArticleLinkArray?.forEach(containForArticleLink => {
-            const articleLinkId = containForArticleLink.to.id;
-            log({articleLinkId})
-            const articleTitle = containForArticleLink['string'].value;
-            log({articleTitle})
-            htmlContent += `  <p class="H">${articleTitle}</p>\n`;
+        const containForChapterLinkArray = sectionLink.outByType[containTypeLinkId];
+        log({containForChapterLinkArray})
+        const chapterIndentAmount = 2;
+        containForChapterLinkArray?.forEach(containForChapterLink => {
+            const chapterLinkId = containForChapterLink.to.id;
+            log({chapterLinkId})
+            const chapterTitle = containForChapterLink['string'].value;
+            log({chapterTitle})
+            htmlContent += ' '.repeat(chapterIndentAmount) + `<p class="H">${chapterTitle}</p>\n`;
 
-            const articleLink = deep.minilinks.byId[articleLinkId];
-            log({articleLink})
-            const containForClauseLinkArray = articleLink.outByType[containTypeLinkId];
-            log({containForClauseLinkArray})
-            containForClauseLinkArray?.forEach(containForClauseLink => {
-                const clauseTitle = containForClauseLink['string'].value;
-                log({clauseTitle})
-                htmlContent += `  <p>${clauseTitle}</p>\n`;
+            const chapterLink = deep.minilinks.byId[chapterLinkId];
+            log({chapterLink})
+            const containForArticleLinkArray = chapterLink.outByType[containTypeLinkId];
+            log({containForArticleLinkArray})
+            const articleIndentAmount = 4;
+            containForArticleLinkArray?.forEach(containForArticleLink => {
+                const articleLinkId = containForArticleLink.to.id;
+                log({articleLinkId})
+                const articleTitle = containForArticleLink['string'].value;
+                log({articleTitle})
+                htmlContent += ' '.repeat(articleIndentAmount) + `<p class="H">${articleTitle}</p>\n`;
+
+                const articleLink = deep.minilinks.byId[articleLinkId];
+                log({articleLink})
+                const containForClauseLinkArray = articleLink.outByType[containTypeLinkId];
+                log({containForClauseLinkArray})
+                const clauseIndentAmount = 6;
+                containForClauseLinkArray?.forEach(containForClauseLink => {
+                    const clauseTitle = containForClauseLink['string'].value;
+                    log({clauseTitle})
+                    htmlContent += ' '.repeat(clauseIndentAmount) + `<p>${clauseTitle}</p>\n`;
+                });
             });
         });
     });
