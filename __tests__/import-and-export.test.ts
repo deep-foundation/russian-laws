@@ -12,6 +12,9 @@ import { bool, cleanEnv, str } from 'envalid';
 import dotenv from 'dotenv'
 dotenv.config({path: '.env.tests.local'});
 import {diffLines} from 'diff';
+import cheerio from 'cheerio'
+import { inspect } from 'bun';
+import util from 'util'
 
 const env = cleanEnv(process.env, {
   GRAPHQL_PATH: str({desc: "Path to GraphQL endpoint"}),
@@ -59,12 +62,24 @@ it('import and export',  async() => {
   log({filePath})
   const initialHtml = fsExtra.readFileSync(filePath, {encoding: 'utf8'});
   log({initialHtml})
-  const {data: [{id: documentLinkId}]} = await deep.insert({
-    type_id: deep.idLocal("@deep-foundation/core", "Space")
-  })
-  log({documentLinkId})
-  const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,spaceId: documentLinkId})
-  log({processHtmlAndCreateLinksResult})
+  const initialHtmlParsed = cheerio.load(initialHtml);
+  const initialHtmlTargetParagraph = initialHtmlParsed('body').find('p').filter(function() {
+    return initialHtmlParsed(this).text().trim() === 'ОБЩАЯ ЧАСТЬ';
+  });
+  const initialHtmlParagraphsAfterTarget = initialHtmlTargetParagraph.nextAll('p').filter((index, element) => {
+    const text = initialHtmlParsed(element).text().trim();
+    return text !== '' && text !== '\u00A0'; 
+  });
+  log({initialHtmlParagraphsAfterTarget})
+
+  
+  // const {data: [{id: documentLinkId}]} = await deep.insert({
+  //   type_id: deep.idLocal("@deep-foundation/core", "Space")
+  // })
+  // log({documentLinkId})
+  // const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,spaceId: documentLinkId})
+  // log({processHtmlAndCreateLinksResult})
+  const documentLinkId = 35959
   const {data: linksDownToDocument} = await deep.select({
     up: {
         parent_id: documentLinkId,
@@ -73,6 +88,19 @@ it('import and export',  async() => {
   deep.minilinks.apply(linksDownToDocument);
   const exportedHtml = linksToHtml({deep,documentRootId: documentLinkId})
   log({exportedHtml})
+  const exportedHtmlParsed = cheerio.load(exportedHtml);
+  const exportedHtmlParagraphs = exportedHtmlParsed('p');
   const diffResult = diffLines(initialHtml, exportedHtml)
   log({diffResult})
+  fsExtra.writeFileSync('initialParagraphs.html', initialHtmlParagraphsAfterTarget.map((i,paragraph)=>initialHtmlParsed(paragraph).text()).get().join('\n'), {encoding: 'utf-8'})
+  fsExtra.writeFileSync('exportedParagraphs.html', exportedHtmlParagraphs.map((i,paragraph)=>exportedHtmlParsed(paragraph).text()).get().join('\n'), {encoding: 'utf-8'})
+  expect(exportedHtmlParagraphs.length).toBe(initialHtmlParagraphsAfterTarget.length);
+  for (let i = 0; i < initialHtmlParagraphsAfterTarget.length; i++) {
+    const initialHtmlParagraph = initialHtmlParagraphsAfterTarget[i];
+    const exportedHtmlParagraph = exportedHtmlParagraphs[i];
+    expect(exportedHtmlParsed(exportedHtmlParagraph).text()).toBe(initialHtmlParsed(initialHtmlParagraph).text())
+  }
+  fsExtra.writeFileSync('initial.html', initialHtml, {encoding: 'utf-8'})
+  fsExtra.writeFileSync('exported.html', exportedHtml, {encoding: 'utf-8'})
+  fsExtra.writeFileSync('diff.txt', JSON.stringify(diffResult, null, 2), {encoding: 'utf-8'})
 });
