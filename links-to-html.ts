@@ -1,28 +1,45 @@
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
+import { log } from "./log";
 
 export function linksToHtml({ deep, documentRootId }: { deep: DeepClient; documentRootId: number; }) {
     let htmlContent = "";
 
-const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
-const sectionLinks = deep.minilinks.byId[documentRootId].outByType[containTypeLinkId];
-    sectionLinks.forEach(sectionLink => {
-        const sectionId = sectionLink.to.id;
-        const sectionTitle = sectionLink['string'].value;
+    const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
+    const documentLink = deep.minilinks.byId[documentRootId];
+    log({documentLink})
+    const containForSectionLinkArray = documentLink.outByType[containTypeLinkId];
+    log({containForSectionLinkArray})
+    containForSectionLinkArray.forEach(containForSectionLink => {
+        const sectionLinkId = containForSectionLink.to.id;
+        log({sectionLinkId})
+        const sectionTitle = containForSectionLink['string'].value;
+        log({sectionTitle})
         htmlContent += `<p class="H">${sectionTitle}</p>\n`;
 
-        const articleLinks = deep.minilinks.byId[sectionId].outByType[containTypeLinkId];
-        articleLinks?.forEach(articleLink => {
-            const articleId = articleLink.to.id;
-            const articleTitle = articleLink['string'].value;
+        const sectionLink = deep.minilinks.byId[sectionLinkId];
+        log({sectionLink})
+        const containForArticleLinkArray = sectionLink.outByType[containTypeLinkId];
+        log({containForArticleLinkArray})
+        containForArticleLinkArray?.forEach(containForArticleLink => {
+            const articleLinkId = containForArticleLink.to.id;
+            log({articleLinkId})
+            const articleTitle = containForArticleLink['string'].value;
+            log({articleTitle})
             htmlContent += `  <p class="H">${articleTitle}</p>\n`;
 
-            const clauseLinks = deep.minilinks.byId[articleId].outByType[containTypeLinkId];
-            clauseLinks?.forEach(clauseLink => {
-                const clauseTitle = clauseLink['string'].value;
+            const articleLink = deep.minilinks.byId[articleLinkId];
+            log({articleLink})
+            const containForClauseLinkArray = articleLink.outByType[containTypeLinkId];
+            log({containForClauseLinkArray})
+            containForClauseLinkArray?.forEach(containForClauseLink => {
+                const clauseTitle = containForClauseLink['string'].value;
+                log({clauseTitle})
                 htmlContent += `  <p>${clauseTitle}</p>\n`;
             });
         });
     });
 
-    return `<html><body>${htmlContent}</body></html>`;
+    const result = `<html><body>${htmlContent}</body></html>`;
+    log({result})
+    return result;
 }
