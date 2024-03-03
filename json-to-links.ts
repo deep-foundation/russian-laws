@@ -134,7 +134,7 @@ export class JsonToLinks {
             log(`Reserved ${batch} items in batch ${i + 1}/${numBatches}. Total reserved: ${reservedIds.length}/${totalItems}`)
         }
         
-        return reservedIds;
+        return reservedIds.flat();
     }
     
     const totalItemsToReserve = 5000; // Example: total number of items to reserve
