@@ -2,8 +2,6 @@ import type {
   DeepClient,
   SerialOperation,
 } from "@deep-foundation/deeplinks/imports/client.js";
-import { createClauseOperation } from "./create-clause-operation.js";
-import { htmlToJson } from "./html-to-json.js";
 import { Comment } from "./comment.js";
 import type { LawPage } from "./law-page.js";
 import { log } from "./log.js";
