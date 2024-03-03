@@ -157,15 +157,17 @@ export class JsonToLinks {
     const reservedIds = await deep.reserve(linksToReserve);
     log({ reservedIds });
 
-    const operations = json.sections.flatMap((section, sectionIndex) => {
-      return this.makeSectionOperations({ section, index: sectionIndex,documentLinkId });
-    });
+    const operations = this.makeSectionsOperations({
+        documentLinkId,
+        sections: json.sections
+    })
 
     log({ operations });
     const result = await deep.serial({ operations });
     log({ result });
     return result;
   }
+
 
   makeSectionsOperations({
     sections,
