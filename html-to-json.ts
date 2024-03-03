@@ -3,15 +3,19 @@ import { Section } from "./section.js";
 import { Chapter } from "./chapter.js";
 import { Article } from "./article.js";
 import { Comment } from "./comment.js";
+import type { HtmlItem } from "./html-item.js";
+import type { Clause } from "./clause.js";
+import type { Preamble } from "./preamble.js";
 
 export function htmlToJson({ html }: { html: string; }) {
-    const result: { preamble: Array<string>; sections: Array<Section>; preambleComments: Array<Comment>; } = { preamble: [], sections: [], preambleComments: [] };
+    const result: { preamble: Array<Preamble>; sections: Array<Section>; preambleComments: Array<Comment>; } = { preamble: [], sections: [], preambleComments: [] };
     const dom = new JSDOM(html);
     const paragraphs = [...dom.window.document.querySelectorAll("p")];
 
     let currentSection: Section | null = null;
     let currentChapter: Chapter | null = null;
     let currentArticle: Article | null = null;
+    let currentHtmlItem: HtmlItem | null = null;
     let preambleMode = true;
 
     for (const p of paragraphs) {
@@ -30,7 +34,8 @@ export function htmlToJson({ html }: { html: string; }) {
         const isComment = p.classList.contains("I") || text.startsWith("(")
 
         if (preambleMode && !isChapter && !isSection) {
-            result.preamble.push(htmlContent);
+            const preamble: Preamble = {title: htmlContent, next: null};
+            result.preamble.push(preamble);
             continue;
         }
         if (isSection || isChapter || isArticle || isComment) {
@@ -43,37 +48,53 @@ export function htmlToJson({ html }: { html: string; }) {
 
             switch (paragraphType) {
                 case "section":
-                    currentSection = { title: htmlContent, chapters: [], comments: [] };
+                    currentSection = { title: htmlContent, chapters: [], comments: [], next: null };
+                    if(currentHtmlItem) {
+                        currentHtmlItem.next = currentSection;
+                    }
+                    currentHtmlItem = currentSection;
                     result.sections.push(currentSection);
                     currentChapter = null;
                     currentArticle = null;
                     break;
                 case "chapter":
-                    currentChapter = { title: htmlContent, articles: [], comments: [] };
+                    currentChapter = { title: htmlContent, articles: [], comments: [] , next: null};
+                    if(currentHtmlItem) {
+                        currentHtmlItem.next = currentChapter;
+                    }
+                    currentHtmlItem = currentChapter
                     if (currentSection) {
                         currentSection.chapters.push(currentChapter);
                     } else {
-                        currentSection = { title: "", chapters: [currentChapter], comments: [] };
+                        currentSection = { title: "", chapters: [currentChapter], comments: [], next: null };
                         result.sections.push(currentSection);
                     }
                     currentArticle = null;
                     break;
                 case "article":
-                    currentArticle = { title: htmlContent, clauses: [], comments: [] };
+                    currentArticle = { title: htmlContent, clauses: [], comments: [], next: null };
+                    if(currentHtmlItem) {
+                        currentHtmlItem.next = currentArticle;
+                    }
+                    currentHtmlItem = currentArticle;
                     if (currentChapter) {
                         currentChapter.articles.push(currentArticle);
                     } else {
-                        currentChapter = { title: "", articles: [currentArticle], comments: [] };
+                        currentChapter = { title: "", articles: [currentArticle], comments: [], next: null };
                         if (currentSection) {
                             currentSection.chapters.push(currentChapter);
                         } else {
-                            currentSection = { title: "", chapters: [currentChapter], comments: [] };
+                            currentSection = { title: "", chapters: [currentChapter], comments: [] , next: null};
                             result.sections.push(currentSection);
                         }
                     }
                     break;
                 case "comment":
-                    const comment: Comment = { text: htmlContent };
+                    const comment: Comment = { text: htmlContent , next: null};
+                    if(currentHtmlItem) {
+                        currentHtmlItem.next = comment;
+                    }
+                    currentHtmlItem = comment;
                     if (currentArticle) {
                         currentArticle.comments.push(comment);
                     } else if (currentChapter) {
@@ -91,13 +112,17 @@ export function htmlToJson({ html }: { html: string; }) {
                     break;
             }
         } else if (currentArticle) {
-            currentArticle.clauses.push(htmlContent);
+            const clause: Clause = {title: htmlContent, next: null};
+            currentArticle.clauses.push(clause);
         } else if (currentChapter) {
-            currentChapter.articles.push({ title: "", clauses: [htmlContent], comments: [] });
+            const clause: Clause = {title: htmlContent, next: null};
+            currentChapter.articles.push({ title: "", clauses: [clause], comments: [], next: null });
         } else if (currentSection) {
-            currentSection.chapters.push({ title: "", articles: [{ title: "", clauses: [htmlContent], comments: [] }], comments: [] });
+            const clause: Clause = {title: htmlContent, next: null};
+            currentSection.chapters.push({ title: "", articles: [{ title: "", clauses: [clause], comments: [], next: null }], comments: [], next: null });
         } else {
-            result.preamble.push(htmlContent);
+            const preamble: Preamble = {title: htmlContent, next: null};
+            result.preamble.push(preamble);
         }
     }
 
