@@ -24,17 +24,22 @@ export function htmlToJson({ html }: { html: string; }) {
             continue;
         }
 
-        if (preambleMode && !p.classList.contains("H") && !p.classList.contains("T")) {
+        const isSection = p.classList.contains("T") && text.toLowerCase().startsWith("раздел");
+        const isChapter = p.classList.contains("H") && text.toLowerCase().startsWith("глава");
+        const isArticle = p.classList.contains("H") && text.toLowerCase().startsWith("статья");
+        const isComment = p.classList.contains("I") || text.startsWith("(")
+
+        if (preambleMode && !isChapter && !isSection) {
             result.preamble.push(htmlContent);
             continue;
         }
-        if (p.classList.contains("H") || p.classList.contains("T") || p.classList.contains("I")) {
+        if (isSection || isChapter || isArticle || isComment) {
             preambleMode = false;
             let paragraphType;
-            if (text.startsWith("РАЗДЕЛ") || text.startsWith("Раздел")) paragraphType = "section";
-            if (text.startsWith("ГЛАВА") || text.startsWith("Глава")) paragraphType = "chapter";
-            if (text.startsWith("Статья")) paragraphType = "article";
-            if (text.startsWith("(") || p.classList.contains("I")) paragraphType = "comment";
+            if (isSection) paragraphType = "section";
+            if (isChapter) paragraphType = "chapter";
+            if (isArticle) paragraphType = "article";
+            if (isComment) paragraphType = "comment";
 
             switch (paragraphType) {
                 case "section":

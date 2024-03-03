@@ -79,7 +79,7 @@ axios({
     html = iconv.decode(Buffer.from(response.data), 'win1251');
     html = transformHtml({ html });
     saveFile({content:html, filePath: path.join(directory, fileName)});
-    console.log(`Document ${options.name} is loaded`);
+    log(`Document ${options.name} is loaded`);
   })
   .catch(function (error) {
     console.error(`Error on load of ${options.name} document`, error);

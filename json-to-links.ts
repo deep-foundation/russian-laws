@@ -1,25 +1,26 @@
-import { DeepClient, SerialOperation } from "@deep-foundation/deeplinks/imports/client.js";
+import type { DeepClient, SerialOperation } from "@deep-foundation/deeplinks/imports/client.js";
 import { createLinkOperation } from './create-link-operation.js';
 import { createClauseOperation } from './create-clause-operation.js';
 import { htmlToJson } from "./html-to-json.js";
-import { Comment } from "./comment.js";
-import { LawPage } from "./law-page.js";
+import type { Comment } from "./comment.js";
+import type { LawPage } from "./law-page.js";
+import { log } from "./log.js";
 
 
 export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json: LawPage; spaceId: number }) {
     const containTypeLinkId = await deep.id('@deep-foundation/core', 'Contain');
-    const commentTypeLinkId = await deep.id('@senchapencha/law', 'Comment');
-    const articleTypeLinkId = await deep.id('@senchapencha/law', 'Article');
-    const sectionTypeLinkId = await deep.id('@senchapencha/law', 'Section');
-    const chapterTypeLinkId = await deep.id('@senchapencha/law', 'Chapter');
-    const clauseTypeLinkId = await deep.id('@senchapencha/law', 'Clause');
+    const commentTypeLinkId = await deep.id('@deep-foundation/law', 'Comment');
+    const articleTypeLinkId = await deep.id('@deep-foundation/law', 'Article');
+    const sectionTypeLinkId = await deep.id('@deep-foundation/law', 'Section');
+    const chapterTypeLinkId = await deep.id('@deep-foundation/law', 'Chapter');
+    const clauseTypeLinkId = await deep.id('@deep-foundation/law', 'Clause');
 
-    console.log('containTypeLinkId', containTypeLinkId);
-    console.log('commentTypeLinkId', commentTypeLinkId);
-    console.log('articleTypeLinkId', articleTypeLinkId);
-    console.log('sectionTypeLinkId', sectionTypeLinkId);
-    console.log('chapterTypeLinkId', chapterTypeLinkId);
-    console.log('clauseTypeLinkId', clauseTypeLinkId);
+    log('containTypeLinkId', containTypeLinkId);
+    log('commentTypeLinkId', commentTypeLinkId);
+    log('articleTypeLinkId', articleTypeLinkId);
+    log('sectionTypeLinkId', sectionTypeLinkId);
+    log('chapterTypeLinkId', chapterTypeLinkId);
+    log('clauseTypeLinkId', clauseTypeLinkId);
 
     let count = 0;
     json.sections.forEach(section => {
@@ -33,6 +34,7 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
     });
 
     const reservedIds = await deep.reserve(count);
+    log({reservedIds})
 
     let operations: Array<SerialOperation> = [];
     const processComments = (comments: Array<Comment>, parentLinkId: number) => {
@@ -56,6 +58,7 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
 
     json.sections.forEach(section => {
         const sectionLinkId = reservedIds.pop();
+        log({sectionLinkId})
         if (!sectionLinkId) {
             throw new Error('No reserved id');
         }
@@ -64,6 +67,7 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
 
         section.chapters.forEach(chapter => {
             const chapterLinkId = reservedIds.pop();
+            log({chapterLinkId})
             if (!chapterLinkId) {
                 throw new Error('No reserved id');
             }
@@ -72,6 +76,7 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
 
             chapter.articles.forEach(article => {
                 const articleLinkId = reservedIds.pop();
+                log({articleLinkId})
                 if (!articleLinkId) {
                     throw new Error('No reserved id');
                 }
@@ -85,6 +90,8 @@ export async function jsonToLinks({deep, json ,spaceId}: {deep: DeepClient; json
         });
     });
 
+    log({operations})
     const result = await deep.serial({ operations });
+    log({result})
     return result;
 }

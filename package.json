@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "type": "module",
   "repository": {
@@ -22,10 +22,12 @@
   "homepage": "https://github.com/Konard/russian-law#readme",
   "dependencies": {
     "@deep-foundation/deeplinks": "^0.0.322",
+    "@types/diff": "^5.0.9",
     "@types/dotenv": "^8.2.0",
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12",
     "commander": "^11.1.0",
+    "diff": "^5.2.0",
     "dotenv": "^16.4.5",
     "envalid": "^8.0.0",
     "fs-extra": "^11.2.0",
@@ -36,10 +38,15 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@types/bun": "^1.0.8",
+    "@types/debug": "^4.1.12",
     "@types/fs-extra": "^11.0.4",
-    "@types/js-beautify": "^1.14.3",
+    "@types/jest": "^29.5.12",
     "@types/jsdom": "^21.1.6",
     "@types/yargs": "^17.0.32",
-    "npx": "^10.2.2"
+    "jest": "^29.7.0",
+    "npx": "^10.2.2",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.3.3"
   }
 }

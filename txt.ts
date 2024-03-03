@@ -10,7 +10,7 @@ async function extractPAndSaveToFile({ htmlFilePath, outputFilePath }: { htmlFil
     const combinedText = Array.from(paragraphs).map(p => p.textContent).join('\n');
 
     fs.writeFileSync(outputFilePath, combinedText, 'utf8');
-    console.log(`Data extracted and saved to ${outputFilePath}`);
+    log(`Data extracted and saved to ${outputFilePath}`);
 }
 
 // Пример использования функции

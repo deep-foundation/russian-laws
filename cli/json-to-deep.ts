@@ -3,7 +3,7 @@
 import {saveFile} from '../files.js';
 
 import fs from "fs";
-import { rebuildHtmlFromDeepLinks } from "../rebuild-html-from-deep-links.js";
+import { linksToHtml } from "../links-to-html.js";
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
 import { generateApolloClient } from '@deep-foundation/hasura/client.js';
 import yargs from 'yargs';
@@ -75,7 +75,7 @@ const apolloClient = generateApolloClient({
   const deep = new DeepClient({ deep: guestDeep, ...adminLoginResult });
 
 const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
-console.log('containTypeLinkId', containTypeLinkId);
+log('containTypeLinkId', containTypeLinkId);
 
 const sourceFullPath = path.join(options.sourceDirectory, options.sourceFileName);
 let json = JSON.parse(fs.readFileSync(sourceFullPath, 'utf8'));
