@@ -20,7 +20,6 @@ export class JsonToLinks {
   private chapterTypeLinkId: number;
   private clauseTypeLinkId: number;
   private indexTypeLinkId: number;
-  private containerLinkId: number;
 
   constructor(
     private _config: {
@@ -32,7 +31,6 @@ export class JsonToLinks {
       chapterTypeLinkId: number;
       clauseTypeLinkId: number;
       indexTypeLinkId: number;
-      containerLinkId: number;
     }
   ) {
     this.containTypeLinkId = _config.containTypeLinkId;
@@ -42,7 +40,6 @@ export class JsonToLinks {
     this.chapterTypeLinkId = _config.chapterTypeLinkId;
     this.clauseTypeLinkId = _config.clauseTypeLinkId;
     this.indexTypeLinkId = _config.indexTypeLinkId;
-    this.containerLinkId = _config.containerLinkId;
   }
 
   static async new(config: { deep: DeepClient; containerLinkId: number }) {
