@@ -3,10 +3,10 @@ import { htmlToJson } from "./html-to-json.js";
 import { jsonToLinks } from "./json-to-links.js";
 
 
-export async function htmlToLinks({deep, html ,spaceId}: {deep: DeepClient; html: string; spaceId: number }) {
+export async function htmlToLinks({deep, html ,containerLinkId}: {deep: DeepClient; html: string; containerLinkId: number }) {
 
     const json = htmlToJson({ html });
 
-   const result = jsonToLinks({deep,json,spaceId})
+   const result = jsonToLinks({deep,json,containerLinkId})
    return result;
 }

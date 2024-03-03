@@ -76,7 +76,7 @@ it('import and export',  async() => {
     type_id: deep.idLocal("@deep-foundation/core", "Space")
   })
   log({documentLinkId})
-  const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,spaceId: documentLinkId})
+  const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,containerLinkId: documentLinkId})
   log({processHtmlAndCreateLinksResult})
   // const documentLinkId = 35959
   const {data: linksDownToDocument} = await deep.select({

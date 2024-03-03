@@ -78,5 +78,5 @@ log('containTypeLinkId', containTypeLinkId);
 
 const sourceFullPath = path.join(options.sourceDirectory, options.sourceFileName);
 let html = fs.readFileSync(sourceFullPath, 'utf8');
-htmlToLinks({deep,html,spaceId: options.targetSpaceId});
+htmlToLinks({deep,html,containerLinkId: options.targetSpaceId});
 

@@ -16,11 +16,11 @@ import { Clause } from "./clause.js";
 export async function jsonToLinks({
   deep,
   json,
-  spaceId,
+  containerLinkId,
 }: {
   deep: DeepClient;
   json: LawPage;
-  spaceId: number;
+  containerLinkId: number;
 }) {
   const containTypeLinkId = await deep.id("@deep-foundation/core", "Contain");
   const commentTypeLinkId = await deep.id("@deep-foundation/law", "Comment");
@@ -37,302 +37,419 @@ export async function jsonToLinks({
   log("chapterTypeLinkId", chapterTypeLinkId);
   log("clauseTypeLinkId", clauseTypeLinkId);
 
-  let count = 0;
-  json.sections.forEach((section) => {
-    count++; // section
-    count++; // index for section
-    section.children.forEach((chapterOrComment) => {
-      count++; // item
-      count++; // index for item
-      const hasChildren = "children" in chapterOrComment;
-      if (hasChildren) {
-        const chapter = chapterOrComment;
-        chapter.children.forEach((articleOrComment) => {
-          count++; // article
-          count++; // index for article
-          const hasChildren = "children" in articleOrComment;
-          if (hasChildren) {
-            const article = articleOrComment;
-            article.children.forEach((commentOrClause) => {
-              count++; // clause
-              count++; // index for clause
-            });
-          }
-        });
-      }
-    });
-  });
-
-  const reservedIds = await deep.reserve(count);
-  log({ reservedIds });
-
   let operations: Array<SerialOperation> = [];
-  const processComments = ({
+}
+
+export class JsonToLinks {
+  private _reservedLinkIds: number[] = [];
+  private containTypeLinkId: number;
+  private commentTypeLinkId: number;
+  private articleTypeLinkId: number;
+  private sectionTypeLinkId: number;
+  private chapterTypeLinkId: number;
+  private clauseTypeLinkId: number;
+  private indexTypeLinkId: number;
+  private containerLinkId: number;
+
+  constructor(
+    private _config: {
+      deep: DeepClient;
+      containTypeLinkId: number;
+      commentTypeLinkId: number;
+      articleTypeLinkId: number;
+      sectionTypeLinkId: number;
+      chapterTypeLinkId: number;
+      clauseTypeLinkId: number;
+      indexTypeLinkId: number;
+      containerLinkId: number;
+    }
+  ) {
+    this.containTypeLinkId = _config.containTypeLinkId;
+    this.commentTypeLinkId = _config.commentTypeLinkId;
+    this.articleTypeLinkId = _config.articleTypeLinkId;
+    this.sectionTypeLinkId = _config.sectionTypeLinkId;
+    this.chapterTypeLinkId = _config.chapterTypeLinkId;
+    this.clauseTypeLinkId = _config.clauseTypeLinkId;
+    this.indexTypeLinkId = _config.indexTypeLinkId;
+    this.containerLinkId = _config.containerLinkId;
+  }
+
+  static async new(config: { deep: DeepClient; containerLinkId: number }) {
+    const { deep } = config;
+    const containTypeLinkId = await deep.id("@deep-foundation/core", "Contain");
+    const commentTypeLinkId = await deep.id("@deep-foundation/law", "Comment");
+    const articleTypeLinkId = await deep.id("@deep-foundation/law", "Article");
+    const sectionTypeLinkId = await deep.id("@deep-foundation/law", "Section");
+    const chapterTypeLinkId = await deep.id("@deep-foundation/law", "Chapter");
+    const clauseTypeLinkId = await deep.id("@deep-foundation/law", "Clause");
+    const indexTypeLinkId = await deep.id("@deep-foundation/law", "Index");
+    return new JsonToLinks({
+      articleTypeLinkId,
+      chapterTypeLinkId,
+      clauseTypeLinkId,
+      commentTypeLinkId,
+      containTypeLinkId,
+      indexTypeLinkId,
+      sectionTypeLinkId,
+      ...config,
+    });
+  }
+
+  makeCommentsOperations({
     comments,
     parentLinkId,
   }: {
     comments: Array<Comment>;
     parentLinkId: number;
-  }) => {
-    comments?.forEach((comment) => {
-      operations.push({
-        table: "links",
-        type: "insert",
-        objects: {
-          type_id: commentTypeLinkId,
-          in: {
-            data: parentLinkId
-              ? [
-                  {
-                    type_id: containTypeLinkId,
-                    from_id: parentLinkId,
-                    string: { data: { value: comment.text } },
-                  },
-                ]
-              : [],
-          },
-        },
+  }) {
+    return comments.flatMap((comment, commentIndex) => {
+      const {operations} = this.makeCommentOperations({
+        comment,
+        index: commentIndex,
+        parentLinkId: parentLinkId,
+      });
+      return operations;
+    });
+  }
+
+  countLinksToReserve({ json }: { json: LawPage }) {
+    let count = 0;
+    json.sections.forEach((section) => {
+      count++; // section
+      count++; // contain for section
+      count++; // index for section
+      count++; // contain for index
+      section.children.forEach((chapterOrComment) => {
+        count++; // item
+        count++; // contain for item
+        count++; // index for item
+        count++; // contain for index
+        const hasChildren = "children" in chapterOrComment;
+        if (hasChildren) {
+          const chapter = chapterOrComment;
+          chapter.children.forEach((articleOrComment) => {
+            count++; // article
+            count++; // contain for article
+            count++; // index for article
+            count++; // contain for index
+            const hasChildren = "children" in articleOrComment;
+            if (hasChildren) {
+              const article = articleOrComment;
+              article.children.forEach((commentOrClause) => {
+                count++; // clause
+                count++; // contain for clause
+                count++; // index for clause
+                count++; // contain for index
+              });
+            }
+          });
+        }
       });
     });
-  };
+    return count;
+  }
 
-  const processClause = ({
-    clause,
-    articleLinkId,
-    clauseIndex,
+  async convert({ json, documentLinkId }: { json: LawPage, documentLinkId: number }) {
+    const { deep } = this._config;
+
+    const linksToReserve = this.countLinksToReserve({ json });
+
+    const reservedIds = await deep.reserve(linksToReserve);
+    log({ reservedIds });
+
+    const operations = json.sections.flatMap((section, sectionIndex) => {
+      return this.makeSectionOperations({ section, index: sectionIndex,documentLinkId });
+    });
+
+    log({ operations });
+    const result = await deep.serial({ operations });
+    log({ result });
+    return result;
+  }
+
+  makeSectionsOperations({
+    sections,
+    documentLinkId
   }: {
-    clause: Clause;
-    articleLinkId: number;
-    clauseIndex: number;
-  }) => {
-    const clauseLinkId = reservedIds.pop();
-    const indexForClauseLinkId = reservedIds.pop();
-    log({ clauseLinkId, indexForClauseLinkId });
-    if (!clauseLinkId || !indexForClauseLinkId) {
-      throw new Error("No reserved id");
-    }
-    const clauseInsertOpertaion = createSerialOperation({
-      table: "links",
-      type: "insert",
-      objects: {
-        id: clauseLinkId,
-        type_id: clauseTypeLinkId,
-        in: {
-          data: [
-            {
-              type_id: containTypeLinkId,
-              from_id: articleLinkId,
-              string: { data: { value: clause.text } },
-            },
-          ],
-        },
-      },
-    });
-    const clauseIndexInsertOperation = createSerialOperation({
-      table: "links",
-      type: "insert",
-      objects: {
-        id: indexForClauseLinkId,
-        type_id: indexTypeLinkId,
-        in: {
-          data: {
-            type_id: containTypeLinkId,
-            from_id: articleLinkId,
-            number: { data: { value: clauseIndex } },
-          },
-        },
-      },
-    });
-    operations.push(clauseInsertOpertaion, clauseIndexInsertOperation);
-  };
+    sections: Array<Section>;
+    documentLinkId: number;
+  }) {
+    return sections.flatMap((section, sectionIndex) => {
+        return this.makeSectionOperations({
+            section,
+            index: sectionIndex,
+            documentLinkId
+        });
+    })
+  }
 
-  const processArticle = ({
-    article,
-    chapterLinkId,
-    articleIndex,
+  makeSectionOperations({
+    section,
+    index,
+    documentLinkId
   }: {
-    article: Article;
-    chapterLinkId: number;
-    articleIndex: number;
-  }) => {
-    const articleLinkId = reservedIds.pop();
-    const indexForArticleLinkId = reservedIds.pop();
-    log({ articleLinkId, indexForArticleLinkId });
-    if (!articleLinkId || !indexForArticleLinkId) {
-      throw new Error("No reserved id");
-    }
+    section: Section;
+    index: number;
+    documentLinkId: number
+  }) {
+    const operations: Array<SerialOperation> = [];
 
-    const articleInsertOpertaion = createSerialOperation({
-      table: "links",
-      type: "insert",
-      objects: {
-        id: articleLinkId,
-        type_id: chapterTypeLinkId,
-        in: {
-          data: [
-            {
-              type_id: containTypeLinkId,
-              from_id: chapterLinkId,
-              string: { data: { value: article.title } },
-            },
-          ],
-        },
-      },
-    });
-    const articleIndexInsertOperation = createSerialOperation({
-      table: "links",
-      type: "insert",
-      objects: {
-        id: indexForArticleLinkId,
-        type_id: indexTypeLinkId,
-        in: {
-          data: {
-            type_id: containTypeLinkId,
-            from_id: chapterLinkId,
-            number: { data: { value: articleIndex } },
-          },
-        },
-      },
-    });
-    operations.push(articleInsertOpertaion, articleIndexInsertOperation);
+    const {
+        operations: sectionInsertOperations,
+        linkId
+    } = this.makeHtmlItemOperations({
+        index,
+        parentLinkId: documentLinkId,
+        typeLinkId: this.sectionTypeLinkId,
+        value: section.title
+    })
+    operations.push(...sectionInsertOperations);
 
-    processComments({
-      comments: article.comments,
-      parentLinkId: articleLinkId,
+    const comments = section.comments;
+    const commentOperations = this.makeCommentsOperations({
+      comments,
+      parentLinkId: linkId,
     });
+    operations.push(...commentOperations);
 
-    article.clauses.forEach((clause, clauseIndex) => {
-      processClause({ articleLinkId, clause, clauseIndex });
+    const chapterOperations = this.makeChaptersOperations({
+        chapters: section.chapters,
+        sectionLinkId: linkId
     });
-  };
+    operations.push(...chapterOperations);
 
-  const processChapter = ({
+    return operations;
+  }
+
+  makeChaptersOperations({
+    chapters,
+    sectionLinkId,
+  }: {
+    chapters: Array<Chapter>;
+    sectionLinkId: number;
+  }) {
+    return chapters.flatMap(
+        (chapter, chapterIndex) => {
+          return this.makeChapterOperations({
+            chapter,
+            index: chapterIndex,
+            sectionLinkId,
+          });
+        }
+      )
+  }
+
+  makeChapterOperations({
     chapter,
     sectionLinkId,
-    chapterIndex,
+    index,
   }: {
     chapter: Chapter;
     sectionLinkId: number;
-    chapterIndex: number;
-  }) => {
-    const chapterLinkId = reservedIds.pop();
-    const indexForChapterLinkId = reservedIds.pop();
-    log({ chapterLinkId, indexForChapterLinkId });
-    if (!chapterLinkId || !indexForChapterLinkId) {
-      throw new Error("No reserved id");
-    }
+    index: number;
+  }) {
+    const operations: Array<SerialOperation> = [];
 
-    const chapterInsertOpertaion = createSerialOperation({
-      table: "links",
-      type: "insert",
-      objects: {
-        id: chapterLinkId,
-        type_id: chapterTypeLinkId,
-        in: {
-          data: [
-            {
-              type_id: containTypeLinkId,
-              from_id: sectionLinkId,
-              string: { data: { value: chapter.title } },
-            },
-          ],
-        },
-      },
+
+    const {
+        operations: chapterInsertOperations,
+        linkId
+    } = this.makeHtmlItemOperations({
+        parentLinkId: sectionLinkId,
+        typeLinkId: this.chapterTypeLinkId,
+        value: chapter.title,
+        index
+    })
+    operations.push(...chapterInsertOperations);
+
+    const commentsInsertOperations = this.makeCommentsOperations({
+        comments: chapter.comments,
+        parentLinkId: linkId,
+      });
+    operations.push(...commentsInsertOperations);
+
+    const articleOperations = this.makeArticlesOperations({
+        articles: chapter.articles,
+        chapterLinkId: linkId,
     });
-    const chapterIndexInsertOperation = createSerialOperation({
-      table: "links",
-      type: "insert",
-      objects: {
-        id: indexForChapterLinkId,
-        type_id: indexTypeLinkId,
-        in: {
-          data: {
-            type_id: containTypeLinkId,
-            from_id: sectionLinkId,
-            number: { data: { value: chapterIndex } },
-          },
-        },
-      },
-    });
-    operations.push(chapterInsertOpertaion, chapterIndexInsertOperation);
-    const comments = chapter.comments;
-    processComments({ comments, parentLinkId: chapterLinkId });
+    operations.push(...articleOperations);
 
-    const articles = chapter.articles;
+    return operations;
+  }
 
-    articles.forEach((article, articleIndex) => {
-      processArticle({ article, articleIndex, chapterLinkId });
-    });
-  };
-
-  const processSection = ({
-    section,
-    sectionIndex,
+  makeArticlesOperations({
+    articles,
+    chapterLinkId,
   }: {
-    section: Section;
-    sectionIndex: number;
-  }) => {
-    const sectionLinkId = reservedIds.pop();
-    const indexForSectionLinkId = reservedIds.pop();
-    log({ sectionLinkId, indexForSectionLinkId });
-    if (!sectionLinkId || !indexForSectionLinkId) {
+    articles: Array<Article>;
+    chapterLinkId: number;
+  })  {
+    return articles.flatMap(
+        (article, articleIndex) => {
+          return this.makeArticleOperations({
+            article,
+            index: articleIndex,
+            chapterLinkId
+          });
+        }
+      )
+  }
+
+  makeArticleOperations({
+    article,
+    chapterLinkId,
+    index,
+  }: {
+    article: Article;
+    chapterLinkId: number;
+    index: number;
+  }) {
+    const operations: Array<SerialOperation> = [];
+
+    const {
+        linkId,
+        operations: articleInsertOperations
+    } = this.makeHtmlItemOperations({
+        index,
+        parentLinkId: chapterLinkId,
+        typeLinkId: this.articleTypeLinkId,
+        value: article.title
+    })
+    operations.push(...articleInsertOperations);
+
+    const clausesOperations = article.clauses.flatMap((clause, clauseIndex) => {
+      const {operations} =  this.makeClauseOperations({ articleLinkId: linkId, clause, index: clauseIndex });
+      return operations
+    });
+    operations.push(...clausesOperations);
+
+    const commentsOperations = this.makeCommentsOperations({
+        comments: article.comments,
+        parentLinkId: linkId,
+    }) ;
+    operations.push(...commentsOperations);
+
+    return operations;
+  }
+
+  makeClauseOperations({
+    clause,
+    articleLinkId,
+    index,
+  }: {
+    clause: Clause;
+    articleLinkId: number;
+    index: number;
+  }) {
+    const operations = this.makeHtmlItemOperations({
+        index,
+        parentLinkId: articleLinkId,
+        typeLinkId: this.clauseTypeLinkId,
+        value: clause.text
+    })
+    return operations;
+  }
+
+  makeHtmlItemOperations({
+    value,
+    parentLinkId,
+    index,
+    typeLinkId
+  }: {
+    typeLinkId: number;
+    value: string|number|object;
+    parentLinkId: number;
+    index: number;
+  }) {
+    const operations: Array<SerialOperation> = [];
+    const linkId = this._reservedLinkIds.pop();
+    const containLinkId = this._reservedLinkIds.pop();
+    const indexLinkId = this._reservedLinkIds.pop();
+    log({ linkId, containLinkId,indexLinkId });
+    if (!linkId || !containLinkId || !indexLinkId) {
       throw new Error("No reserved id");
     }
-    const sectionInsertOpertaion = createSerialOperation({
+    const itemInsertOperation = createSerialOperation({
       table: "links",
       type: "insert",
       objects: {
-        id: sectionLinkId,
-        type_id: sectionTypeLinkId,
-        in: {
-          data: spaceId
-            ? [
-                {
-                  type_id: containTypeLinkId,
-                  from_id: spaceId,
-                  string: { data: { value: section.title } },
-                },
-              ]
-            : [],
-        },
+        id: linkId,
+        type_id: typeLinkId,
       },
     });
-    const sectionIndexInsertOperation = createSerialOperation({
+    operations.push(itemInsertOperation);
+    const stringInsertOperation = createSerialOperation({
+      table: typeof value + 's' as 'strings' | 'numbers' | 'objects',
+      type: "insert",
+      objects: {
+        link_id: linkId,
+        value: value,
+      },
+    });
+    operations.push(stringInsertOperation);
+    const containInsertOperation = createSerialOperation({
       table: "links",
       type: "insert",
       objects: {
-        id: indexForSectionLinkId,
-        type_id: indexTypeLinkId,
-        in: {
-          data: spaceId
-            ? [
-                {
-                  type_id: containTypeLinkId,
-                  from_id: spaceId,
-                  number: { data: { value: sectionIndex } },
-                },
-              ]
-            : [],
-        },
+        type_id: this.containTypeLinkId,
+        from_id: parentLinkId,
+        to_id: linkId,
       },
     });
-    operations.push(sectionInsertOpertaion, sectionIndexInsertOperation);
-    const comments = section.comments;
-    processComments({ comments, parentLinkId: sectionLinkId });
-
-    const chapters = section.chapters;
-
-    chapters.forEach((chapter, chapterIndex) => {
-      processChapter({ chapter, chapterIndex, sectionLinkId });
+    operations.push(containInsertOperation);
+    const indexForCommentInsertOperation = createSerialOperation({
+      table: "links",
+      type: "insert",
+      objects: {
+        id: indexLinkId,
+        type_id: this.indexTypeLinkId,
+        from_id: parentLinkId,
+        to_id: index,
+      },
     });
-  };
+    operations.push(indexForCommentInsertOperation);
+    const indexNumberInsertOperation = createSerialOperation({
+      table: "numbers",
+      type: "insert",
+      objects: {
+        link_id: indexLinkId,
+        value: index,
+      },
+    });
+    operations.push(indexNumberInsertOperation);
+    const containForIndexInsertOperation = createSerialOperation({
+      table: "links",
+      type: "insert",
+      objects: {
+        id: containLinkId,
+        type_id: this.containTypeLinkId,
+        from_id: parentLinkId,
+        to_id: indexLinkId,
+      },
+    });
+    operations.push(containForIndexInsertOperation);
+    return {
+        operations,
+        linkId,
+        indexLinkId,
+        containLinkId
+    };
+  }
 
-  json.sections.forEach((section, sectionIndex) => {
-    processSection({ section, sectionIndex });
-  });
-
-  log({ operations });
-  const result = await deep.serial({ operations });
-  log({ result });
-  return result;
+  makeCommentOperations({
+    comment,
+    parentLinkId,
+    index,
+  }: {
+    comment: Comment;
+    parentLinkId: number;
+    index: number;
+  }) {
+    return this.makeHtmlItemOperations({
+        index,
+        parentLinkId,
+        typeLinkId: this.commentTypeLinkId,
+        value: comment.text
+    })
+  }
 }
