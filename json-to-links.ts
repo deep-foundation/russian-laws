@@ -11,33 +11,6 @@ import { Article } from "./article.js";
 import { Section } from "./section.js";
 import { Clause } from "./clause.js";
 
-export async function jsonToLinks({
-  deep,
-  json,
-  containerLinkId,
-}: {
-  deep: DeepClient;
-  json: LawPage;
-  containerLinkId: number;
-}) {
-  const containTypeLinkId = await deep.id("@deep-foundation/core", "Contain");
-  const commentTypeLinkId = await deep.id("@deep-foundation/law", "Comment");
-  const articleTypeLinkId = await deep.id("@deep-foundation/law", "Article");
-  const sectionTypeLinkId = await deep.id("@deep-foundation/law", "Section");
-  const chapterTypeLinkId = await deep.id("@deep-foundation/law", "Chapter");
-  const clauseTypeLinkId = await deep.id("@deep-foundation/law", "Clause");
-  const indexTypeLinkId = await deep.id("@deep-foundation/law", "Index");
-
-  log("containTypeLinkId", containTypeLinkId);
-  log("commentTypeLinkId", commentTypeLinkId);
-  log("articleTypeLinkId", articleTypeLinkId);
-  log("sectionTypeLinkId", sectionTypeLinkId);
-  log("chapterTypeLinkId", chapterTypeLinkId);
-  log("clauseTypeLinkId", clauseTypeLinkId);
-
-  let operations: Array<SerialOperation> = [];
-}
-
 export class JsonToLinks {
   private _reservedLinkIds: number[] = [];
   private containTypeLinkId: number;
