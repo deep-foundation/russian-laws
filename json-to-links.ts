@@ -137,7 +137,7 @@ export class JsonToLinks {
     }
     
     const totalItemsToReserve = 5000; // Example: total number of items to reserve
-    const batchSize = 1000; // Example: batch size
+    const batchSize = 100; // Example: batch size
     
     const reservedIds = await reserveItemsInBatches({ totalItems: totalItemsToReserve, batchSize });
 
