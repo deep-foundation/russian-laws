@@ -123,7 +123,25 @@ export class JsonToLinks {
     const linksToReserve = this.countLinksToReserve({ json });
     log({linksToReserve})
 
-    const reservedIds = await deep.reserve(linksToReserve);
+      async function reserveItemsInBatches({ totalItems, batchSize }: { totalItems: number; batchSize: number; }) {
+        const reservedIds = [];
+        const numBatches = Math.ceil(totalItems / batchSize);
+        
+        for (let i = 0; i < numBatches; i++) {
+            const batch = Math.min(batchSize, totalItems - i * batchSize);
+            const reserved = await deep.reserve(batch);
+            reservedIds.push(reserved);
+        }
+        
+        return reservedIds;
+    }
+    
+    const totalItemsToReserve = 5000; // Example: total number of items to reserve
+    const batchSize = 1000; // Example: batch size
+    
+    const reservedIds = await reserveItemsInBatches({ totalItems: totalItemsToReserve, batchSize });
+
+    // const reservedIds = await deep.reserve(linksToReserve);
     log({ reservedIds });
 
     const operations = this.makeSectionsOperations({
