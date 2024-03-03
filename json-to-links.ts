@@ -121,6 +121,7 @@ export class JsonToLinks {
     const { deep } = this._config;
 
     const linksToReserve = this.countLinksToReserve({ json });
+    log({linksToReserve})
 
     const reservedIds = await deep.reserve(linksToReserve);
     log({ reservedIds });
