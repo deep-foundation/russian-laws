@@ -42,7 +42,7 @@ export class JsonToLinks {
     this.indexTypeLinkId = _config.indexTypeLinkId;
   }
 
-  static async new(config: { deep: DeepClient; containerLinkId: number }) {
+  static async new(config: { deep: DeepClient; }) {
     const { deep } = config;
     const containTypeLinkId = await deep.id("@deep-foundation/core", "Contain");
     const commentTypeLinkId = await deep.id("@deep-foundation/law", "Comment");

@@ -1,12 +1,15 @@
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
 import { htmlToJson } from "./html-to-json.js";
-import { jsonToLinks } from "./json-to-links.js";
+import { JsonToLinks } from "./json-to-links.js";
 
 
-export async function htmlToLinks({deep, html ,containerLinkId}: {deep: DeepClient; html: string; containerLinkId: number }) {
+export async function htmlToLinks({deep, html ,documentLinkId}: {deep: DeepClient; html: string; documentLinkId: number }) {
 
     const json = htmlToJson({ html });
 
-   const result = jsonToLinks({deep,json,containerLinkId})
+    const jsonToLinks = await JsonToLinks.new({
+        deep
+    })
+   const result = jsonToLinks.convert({json,documentLinkId})
    return result;
 }
