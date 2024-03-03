@@ -2,104 +2,81 @@ import { JSDOM } from "jsdom";
 import { Section } from "./section.js";
 import { Chapter } from "./chapter.js";
 import { Article } from "./article.js";
-import { Comment } from "./comment.js";
+import type { Comment } from "./comment.js";
+import type { HtmlItem } from "./html-item.js";
+import type { Clause } from "./clause.js";
 
-export function htmlToJson({ html }: { html: string; }) {
-    const result: { preamble: Array<string>; sections: Array<Section>; preambleComments: Array<Comment>; } = { preamble: [], sections: [], preambleComments: [] };
-    const dom = new JSDOM(html);
-    const paragraphs = [...dom.window.document.querySelectorAll("p")];
+export function htmlToJson({ html }: { html: string }) {
+  const result: {
+    preamble: Array<string>;
+    sections: Array<Section>;
+    preambleComments: Array<Comment>;
+  } = { preamble: [], sections: [], preambleComments: [] };
+  const dom = new JSDOM(html);
+  const paragraphs = [...dom.window.document.querySelectorAll("p")];
 
-    let currentSection: Section | null = null;
-    let currentChapter: Chapter | null = null;
-    let currentArticle: Article | null = null;
-    let preambleMode = true;
+  let preambleMode = true;
 
-    for (const p of paragraphs) {
-        if (!p.textContent) {
-            throw new Error('Empty paragraph');
-        }
-        let text = p.textContent.trim();
-        const htmlContent = p.innerHTML.trim();
-        if (htmlContent === '&nbsp;' || !text) {
-            continue;
-        }
+  let commentOrClauseParent: Section | Chapter | Article | null = null;
 
-        const isSection = p.classList.contains("T") && text.toLowerCase().startsWith("раздел");
-        const isChapter = p.classList.contains("H") && text.toLowerCase().startsWith("глава");
-        const isArticle = p.classList.contains("H") && text.toLowerCase().startsWith("статья");
-        const isComment = p.classList.contains("I") || text.startsWith("(")
-
-        if (preambleMode && !isChapter && !isSection) {
-            result.preamble.push(htmlContent);
-            continue;
-        }
-        if (isSection || isChapter || isArticle || isComment) {
-            preambleMode = false;
-            let paragraphType;
-            if (isSection) paragraphType = "section";
-            if (isChapter) paragraphType = "chapter";
-            if (isArticle) paragraphType = "article";
-            if (isComment) paragraphType = "comment";
-
-            switch (paragraphType) {
-                case "section":
-                    currentSection = { title: htmlContent, chapters: [], comments: [] };
-                    result.sections.push(currentSection);
-                    currentChapter = null;
-                    currentArticle = null;
-                    break;
-                case "chapter":
-                    currentChapter = { title: htmlContent, articles: [], comments: [] };
-                    if (currentSection) {
-                        currentSection.chapters.push(currentChapter);
-                    } else {
-                        currentSection = { title: "", chapters: [currentChapter], comments: [] };
-                        result.sections.push(currentSection);
-                    }
-                    currentArticle = null;
-                    break;
-                case "article":
-                    currentArticle = { title: htmlContent, clauses: [], comments: [] };
-                    if (currentChapter) {
-                        currentChapter.articles.push(currentArticle);
-                    } else {
-                        currentChapter = { title: "", articles: [currentArticle], comments: [] };
-                        if (currentSection) {
-                            currentSection.chapters.push(currentChapter);
-                        } else {
-                            currentSection = { title: "", chapters: [currentChapter], comments: [] };
-                            result.sections.push(currentSection);
-                        }
-                    }
-                    break;
-                case "comment":
-                    const comment: Comment = { text: htmlContent };
-                    if (currentArticle) {
-                        currentArticle.comments.push(comment);
-                    } else if (currentChapter) {
-                        currentChapter.comments = currentChapter.comments || [];
-                        currentChapter.comments.push(comment);
-                    } else if (currentSection) {
-                        currentSection.comments = currentSection.comments || [];
-                        currentSection.comments.push(comment);
-                    } else {
-                        result.preambleComments = result.preambleComments || [];
-                        result.preambleComments.push(comment);
-                    }
-                    break;
-                default:
-                    break;
-            }
-        } else if (currentArticle) {
-            currentArticle.clauses.push(htmlContent);
-        } else if (currentChapter) {
-            currentChapter.articles.push({ title: "", clauses: [htmlContent], comments: [] });
-        } else if (currentSection) {
-            currentSection.chapters.push({ title: "", articles: [{ title: "", clauses: [htmlContent], comments: [] }], comments: [] });
-        } else {
-            result.preamble.push(htmlContent);
-        }
+  for (const p of paragraphs) {
+    if (!p.textContent) {
+      throw new Error("Empty paragraph");
+    }
+    let text = p.textContent.trim();
+    const htmlContent = p.innerHTML.trim();
+    if (htmlContent === "&nbsp;" || !text) {
+      continue;
     }
 
-    return result;
+    const isSection =
+      p.classList.contains("T") && text.toLowerCase().startsWith("раздел");
+    const isChapter =
+      p.classList.contains("H") && text.toLowerCase().startsWith("глава");
+    const isArticle =
+      p.classList.contains("H") && text.toLowerCase().startsWith("статья");
+    const isComment = p.classList.contains("I") || text.startsWith("(");
+
+    if (preambleMode && !isChapter && !isSection) {
+      result.preamble.push(htmlContent);
+      continue;
+    }
+    if (isSection || isChapter || isArticle || isComment) {
+      preambleMode = false;
+      if (isSection) {
+        const section = new Section({ title: htmlContent, children: [] });
+        commentOrClauseParent = section;
+        result.sections.push(section);
+      } else if (isChapter) {
+        const chapter = new Chapter({ title: htmlContent, children: [] });
+        commentOrClauseParent = chapter;
+        const parentSection = result.sections[result.sections.length - 1];
+        parentSection.children.push(chapter);
+      } else if (isArticle) {
+        const article = new Article({ title: htmlContent, children: [] });
+        commentOrClauseParent = article;
+        const parentSection = result.sections[result.sections.length - 1];
+        const parent =
+          parentSection.children[parentSection.children.length - 1];
+        const isParentChapter = 'children' in parent;
+        if(isParentChapter) {
+            parent.children.push(article);
+        }
+      } else if (isComment) {
+        const comment: Comment = { text: htmlContent };
+        if (commentOrClauseParent) {
+        //   @ts-ignore I have no idea why error is here. All (SectionChild|ChapterChild|ArticleChild) match Comment
+          commentOrClauseParent.children.push(comment);
+        } else {
+            result.preambleComments.push(comment);
+        }
+      } else if (commentOrClauseParent instanceof Article) {
+        const clause: Clause = { text: htmlContent };
+        commentOrClauseParent.children.push(clause);
+      } else {
+        result.preamble.push(htmlContent);
+      }
+    }
+  }
+  return result;
 }

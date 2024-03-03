@@ -1,4 +1,7 @@
-import type { Article } from "./article";
-import type { HtmlItem } from "./html-item";
-
-export type Comment = { text: string; next: HtmlItem | null;};
+// export type Comment = { text: string; };
+export class Comment {
+  text: string;
+  constructor({ text }: { text: string; }) {
+    this.text = text;
+  }
+}

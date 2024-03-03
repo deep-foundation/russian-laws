@@ -1,6 +1,10 @@
-import type { HtmlItem } from "./html-item";
+// export type Clause = {
+//   text: string;
+// }
 
-export type Clause = {
-  title: string;
-  next: HtmlItem | null
+export class Clause {
+  text: string;
+  constructor({ text }: { text: string; }) {
+    this.text = text;
+  }
 }
