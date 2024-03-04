@@ -76,8 +76,8 @@ deep.select({
     up: {
         parent_id: 20203,
     }
-}).then((result) => {
+}).then(async (result) => {
     deep.minilinks.apply(result.data);
-    const html = linksToHtml({ deep, documentRootId: 20203 });
+    const html = await linksToHtml({ deep, documentRootId: 20203 });
     saveFile({ filePath: path.join(options.targetDirectory, targetFileName), content: html });
 });
