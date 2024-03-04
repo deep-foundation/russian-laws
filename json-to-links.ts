@@ -130,11 +130,11 @@ export class JsonToLinks {
         for (let i = 0; i < numBatches; i++) {
             const batch = Math.min(batchSize, totalItems - i * batchSize);
             const reserved = await deep.reserve(batch);
-            reservedIds.push(reserved);
-            log(`Reserved ${reserved.length}. Total reserved ${reservedIds.length} / ${totalItems}`)
+            reservedIds.push(...reserved);
+            log(`Reserved ${reservedIds.length} / ${totalItems}`)
         }
         
-        return reservedIds.flat();
+        return reservedIds;
     }
     
     const totalItemsToReserve = 5000; // Example: total number of items to reserve
