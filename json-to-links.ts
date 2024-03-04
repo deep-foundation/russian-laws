@@ -395,7 +395,7 @@ export class JsonToLinks {
         id: indexLinkId,
         type_id: this.indexTypeLinkId,
         from_id: parentLinkId,
-        to_id: index,
+        to_id: linkId,
       },
     });
     operations.push(indexInsertOperation);
