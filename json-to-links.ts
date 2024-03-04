@@ -131,7 +131,7 @@ export class JsonToLinks {
             const batch = Math.min(batchSize, totalItems - i * batchSize);
             const reserved = await deep.reserve(batch);
             reservedIds.push(reserved);
-            log(`Reserved ${batch} items in batch ${i + 1}/${numBatches}. Total reserved: ${reservedIds.length}/${totalItems}`)
+            log(`Reserved ${reserved.length}. Total reserved ${reservedIds.length} / ${totalItems}`)
         }
         
         return reservedIds.flat();
