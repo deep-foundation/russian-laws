@@ -388,7 +388,7 @@ export class JsonToLinks {
       },
     });
     operations.push(containInsertOperation);
-    const indexForCommentInsertOperation = createSerialOperation({
+    const indexInsertOperation = createSerialOperation({
       table: "links",
       type: "insert",
       objects: {
@@ -398,7 +398,7 @@ export class JsonToLinks {
         to_id: index,
       },
     });
-    operations.push(indexForCommentInsertOperation);
+    operations.push(indexInsertOperation);
     const indexNumberInsertOperation = createSerialOperation({
       table: "numbers",
       type: "insert",
