@@ -70,12 +70,12 @@ export function htmlToJson({ html }: { html: string }) {
         } else {
             result.preambleComments.push(comment);
         }
-      } else if (commentOrClauseParent instanceof Article) {
-        const clause: Clause = { text: htmlContent };
-        commentOrClauseParent.children.push(clause);
-      } else {
-        result.preamble.push(htmlContent);
-      }
+      } 
+    } else if (commentOrClauseParent instanceof Article) {
+      const clause: Clause = { text: htmlContent };
+      commentOrClauseParent.children.push(clause);
+    } else {
+      result.preamble.push(htmlContent);
     }
   }
   return result;
