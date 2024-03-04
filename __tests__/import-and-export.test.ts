@@ -72,20 +72,20 @@ it('import and export',  async() => {
   });
   log({initialHtmlParagraphsAfterTarget})
 
-  const {data: [{id: documentLinkId}]} = await deep.insert({
-    type_id: deep.idLocal("@deep-foundation/core", "Space")
-  })
-  log({documentLinkId})
-  const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,documentLinkId: documentLinkId})
-  log({processHtmlAndCreateLinksResult})
-  // const documentLinkId = 35959
+  // const {data: [{id: documentLinkId}]} = await deep.insert({
+  //   type_id: deep.idLocal("@deep-foundation/core", "Space")
+  // })
+  // log({documentLinkId})
+  // const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,documentLinkId: documentLinkId})
+  // log({processHtmlAndCreateLinksResult})
+  const documentLinkId = 97901
   const {data: linksDownToDocument} = await deep.select({
     up: {
         parent_id: documentLinkId,
     }
   })
   deep.minilinks.apply(linksDownToDocument);
-  const exportedHtml = linksToHtml({deep,documentRootId: documentLinkId})
+  const exportedHtml = await linksToHtml({deep,documentRootId: documentLinkId})
   log({exportedHtml})
   const exportedHtmlParsed = cheerio.load(exportedHtml);
   const exportedHtmlParagraphs = exportedHtmlParsed('p');

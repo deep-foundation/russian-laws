@@ -1,54 +1,41 @@
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
 import { log } from "./log";
 
-export function linksToHtml({ deep, documentRootId }: { deep: DeepClient; documentRootId: number; }) {
+export async function linksToHtml({ deep, documentRootId }: { deep: DeepClient; documentRootId: number; }) {
     let htmlContent = "";
 
     const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
+    const indexTypeLinkId = await deep.id('@deep-foundation/law', 'Index')
     const documentLink = deep.minilinks.byId[documentRootId];
     log({documentLink})
-    const containForSectionLinkArray = documentLink.outByType[containTypeLinkId];
-    log({containForSectionLinkArray})
-    containForSectionLinkArray.forEach(containForSectionLink => {
-        const sectionLinkId = containForSectionLink.to.id;
-        log({sectionLinkId})
-        const sectionTitle = containForSectionLink['string'].value;
+    const sectionLinks = documentLink.outByType[indexTypeLinkId].map(link => link.to);
+    log({sections: sectionLinks})
+    sectionLinks.forEach(sectionLink => {
+        const sectionTitle = sectionLink['string'].value;
         log({sectionTitle})
         htmlContent += `<p class="H">${sectionTitle}</p>\n`;
 
-        const sectionLink = deep.minilinks.byId[sectionLinkId];
-        log({sectionLink})
-        const containForChapterLinkArray = sectionLink.outByType[containTypeLinkId];
-        log({containForChapterLinkArray})
-        const chapterIndentAmount = 2;
-        containForChapterLinkArray?.forEach(containForChapterLink => {
-            const chapterLinkId = containForChapterLink.to.id;
-            log({chapterLinkId})
-            const chapterTitle = containForChapterLink['string'].value;
-            log({chapterTitle})
-            htmlContent += ' '.repeat(chapterIndentAmount) + `<p class="H">${chapterTitle}</p>\n`;
+        const chapterOrCommentLink = sectionLink.outByType[indexTypeLinkId];
+        log({chapterOrCommentLink})
+        const sectionChildrenIndentAmount = 2;
+        chapterOrCommentLink?.forEach(chapterOrCommentLink => {
+            const chapterOrCommentTitle = chapterOrCommentLink['string'].value;
+            log({chapterOrCommentTitle})
+            htmlContent += ' '.repeat(sectionChildrenIndentAmount) + `<p class="H">${chapterOrCommentTitle}</p>\n`;
 
-            const chapterLink = deep.minilinks.byId[chapterLinkId];
-            log({chapterLink})
-            const containForArticleLinkArray = chapterLink.outByType[containTypeLinkId];
-            log({containForArticleLinkArray})
-            const articleIndentAmount = 4;
-            containForArticleLinkArray?.forEach(containForArticleLink => {
-                const articleLinkId = containForArticleLink.to.id;
-                log({articleLinkId})
-                const articleTitle = containForArticleLink['string'].value;
-                log({articleTitle})
-                htmlContent += ' '.repeat(articleIndentAmount) + `<p class="H">${articleTitle}</p>\n`;
+            const articleOrCommentLinks = chapterOrCommentLink.outByType[indexTypeLinkId];
+            const chapterChildrenIndentAmount = 4;
+            articleOrCommentLinks?.forEach(articleOrCommentLink => {
+                const articleOrCommentTitle = articleOrCommentLink['string'].value;
+                log({articleOrCommentLink})
+                htmlContent += ' '.repeat(chapterChildrenIndentAmount) + `<p class="H">${articleOrCommentTitle}</p>\n`;
 
-                const articleLink = deep.minilinks.byId[articleLinkId];
-                log({articleLink})
-                const containForClauseLinkArray = articleLink.outByType[containTypeLinkId];
-                log({containForClauseLinkArray})
-                const clauseIndentAmount = 6;
-                containForClauseLinkArray?.forEach(containForClauseLink => {
-                    const clauseTitle = containForClauseLink['string'].value;
-                    log({clauseTitle})
-                    htmlContent += ' '.repeat(clauseIndentAmount) + `<p>${clauseTitle}</p>\n`;
+                const clauseOrCommentLinks = articleOrCommentLink.outByType[indexTypeLinkId];
+                const articleChildrenIndentAmount = 6;
+                clauseOrCommentLinks?.forEach(clauseOrCommentLink => {
+                    const clauseOrCommentTitle = clauseOrCommentLink['string'].value;
+                    log({clauseOrCommentTitle})
+                    htmlContent += ' '.repeat(articleChildrenIndentAmount) + `<p>${clauseOrCommentTitle}</p>\n`;
                 });
             });
         });
