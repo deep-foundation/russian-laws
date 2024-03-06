@@ -139,7 +139,7 @@ export class JsonToLinks {
     }
     
     
-    const reservedIds = await reserveItemsInBatches({ totalItems: linksNumberToReserve, batchSize: 500 });
+    const reservedIds = await reserveItemsInBatches({ totalItems: linksNumberToReserve, batchSize: 100 });
     this._reservedLinkIds = reservedIds;
 
     // const reservedIds = await deep.reserve(linksToReserve);
@@ -152,7 +152,7 @@ export class JsonToLinks {
 
     log({ operations });
 
-    const chunkSize = 500;
+    const chunkSize = 100;
 
     // Split array into chunks
     const operationsChunks = operations.reduce((acc, _, index) => {
