@@ -138,7 +138,7 @@ export class JsonToLinks {
     }
     
     
-    const reservedIds = await reserveItemsInBatches({ totalItems: linksNumberToReserve, batchSize: 100 });
+    const reservedIds = await reserveItemsInBatches({ totalItems: linksNumberToReserve, batchSize: 1000 });
     this._reservedLinkIds = reservedIds;
 
     // const reservedIds = await deep.reserve(linksToReserve);
