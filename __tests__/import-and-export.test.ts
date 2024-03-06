@@ -72,13 +72,13 @@ it('import and export',  async() => {
   });
   log({initialHtmlParagraphsAfterTarget})
 
-  // const {data: [{id: documentLinkId}]} = await deep.insert({
-  //   type_id: deep.idLocal("@deep-foundation/core", "Space")
-  // })
-  // log({documentLinkId})
-  // const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,documentLinkId: documentLinkId})
-  // log({processHtmlAndCreateLinksResult})
-  const documentLinkId = 97901
+  const {data: [{id: documentLinkId}]} = await deep.insert({
+    type_id: deep.idLocal("@deep-foundation/core", "Space")
+  })
+  log({documentLinkId})
+  const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,documentLinkId: documentLinkId})
+  log({processHtmlAndCreateLinksResult})
+  // const documentLinkId = 97901
   const {data: linksDownToDocument} = await deep.select({
     up: {
         parent_id: documentLinkId,
