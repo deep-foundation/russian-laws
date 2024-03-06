@@ -120,8 +120,8 @@ export class JsonToLinks {
   async convert({ json, documentLinkId }: { json: LawPage, documentLinkId: number }) {
     const { deep } = this._config;
 
-    const linksToReserve = this.countLinksToReserve({ json });
-    log({linksToReserve})
+    const linksNumberToReserve = this.countLinksToReserve({ json });
+    log({linksNumberToReserve})
 
       async function reserveItemsInBatches({ totalItems, batchSize }: { totalItems: number; batchSize: number; }) {
         const reservedIds = [];
@@ -137,10 +137,8 @@ export class JsonToLinks {
         return reservedIds;
     }
     
-    const totalItemsToReserve = 5000; // Example: total number of items to reserve
-    const batchSize = 100; // Example: batch size
     
-    const reservedIds = await reserveItemsInBatches({ totalItems: totalItemsToReserve, batchSize });
+    const reservedIds = await reserveItemsInBatches({ totalItems: linksNumberToReserve, batchSize: 100 });
     this._reservedLinkIds = reservedIds;
 
     // const reservedIds = await deep.reserve(linksToReserve);
