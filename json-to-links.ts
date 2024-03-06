@@ -1,5 +1,6 @@
 import type {
   DeepClient,
+  DeepClientResult,
   SerialOperation,
 } from "@deep-foundation/deeplinks/imports/client.js";
 import { Comment } from "./comment.js";
@@ -150,9 +151,20 @@ export class JsonToLinks {
     })
 
     log({ operations });
-    const result = await deep.serial({ operations });
-    log({ result });
-    return result;
+
+    const chunkSize = 1000;
+
+    // Split array into chunks
+    const operationsChunks = operations.reduce((acc, _, index) => {
+      if (index % chunkSize === 0) acc.push(operations.slice(index, index + chunkSize));
+      return acc;
+    }, [] as Array<Array<SerialOperation>>);
+
+    for (const operationsChunk of operationsChunks) {
+      const chunkResult = await deep.serial({ operations: operationsChunk });
+      log({ chunkResult });
+    }
+
   }
 
 
