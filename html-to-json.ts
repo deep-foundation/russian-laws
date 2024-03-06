@@ -4,7 +4,7 @@ import { Chapter } from "./chapter.js";
 import { Article } from "./article.js";
 import type { Comment } from "./comment.js";
 import type { HtmlItem } from "./html-item.js";
-import type { Clause } from "./clause.js";
+import { Clause } from "./clause.js";
 
 export function htmlToJson({ html }: { html: string }) {
   const result: {
@@ -72,7 +72,7 @@ export function htmlToJson({ html }: { html: string }) {
         }
       } 
     } else if (commentOrClauseParent instanceof Article) {
-      const clause: Clause = { text: htmlContent };
+      const clause = new Clause({ text: htmlContent });
       commentOrClauseParent.children.push(clause);
     } else {
       result.preamble.push(htmlContent);
