@@ -336,11 +336,10 @@ export class JsonToLinks {
     })
     operations.push(...articleInsertOperations);
 
-    const clausesOperations = article.clauses.flatMap((clause, clauseIndex) => {
-      fnLog({clause, clauseIndex})
-      const {operations} =  this.makeClauseOperations({ articleLinkId: linkId, clause, index: clauseIndex });
-      return operations
-    });
+    const clausesOperations = this.makeClausesOperations({
+      articleLinkId: linkId,
+      clauses: article.clauses
+    })
     operations.push(...clausesOperations);
 
     const commentsOperations = this.makeCommentsOperations({
@@ -362,7 +361,8 @@ export class JsonToLinks {
     const fnLog = log.extend(this.makeClausesOperations.name)
     return clauses.flatMap((clause, clauseIndex) => {
       fnLog({clause, clauseIndex})
-      return this.makeClauseOperations({ articleLinkId, clause, index: clauseIndex });
+      const {operations} = this.makeClauseOperations({ articleLinkId, clause, index: clauseIndex });
+      return operations;
     });
   }
 
