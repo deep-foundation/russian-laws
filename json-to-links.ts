@@ -298,8 +298,10 @@ export class JsonToLinks {
     articles: Array<Article>;
     chapterLinkId: number;
   })  {
+    const fnLog = log.extend(this.makeArticlesOperations.name)
     return articles.flatMap(
         (article, articleIndex) => {
+          fnLog({article, articleIndex})
           return this.makeArticleOperations({
             article,
             index: articleIndex,
