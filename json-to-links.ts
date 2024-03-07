@@ -71,7 +71,9 @@ export class JsonToLinks {
     comments: Array<Comment>;
     parentLinkId: number;
   }) {
+    const fnLog = log.extend(this.makeCommentsOperations.name)
     return comments.flatMap((comment, commentIndex) => {
+      fnLog({comment, commentIndex})
       const {operations} = this.makeCommentOperations({
         comment,
         index: commentIndex,
@@ -175,7 +177,9 @@ export class JsonToLinks {
     sections: Array<Section>;
     documentLinkId: number;
   }) {
+    const fnLog = log.extend(this.makeSectionsOperations.name)
     return sections.flatMap((section, sectionIndex) => {
+      fnLog({section, sectionIndex})
         return this.makeSectionOperations({
             section,
             index: sectionIndex,
@@ -184,15 +188,18 @@ export class JsonToLinks {
     })
   }
 
-  makeSectionOperations({
-    section,
-    index,
-    documentLinkId
-  }: {
+  makeSectionOperations(options: {
     section: Section;
     index: number;
     documentLinkId: number
   }) {
+    const fnLog = log.extend(this.makeSectionOperations.name)
+    fnLog({options})
+    const {
+      section,
+      index,
+      documentLinkId
+    } = options;
     const operations: Array<SerialOperation> = [];
 
     const {
@@ -229,8 +236,10 @@ export class JsonToLinks {
     chapters: Array<Chapter>;
     sectionLinkId: number;
   }) {
+    const fnLog = log.extend(this.makeChaptersOperations.name)
     return chapters.flatMap(
         (chapter, chapterIndex) => {
+          fnLog({chapter, chapterIndex})
           return this.makeChapterOperations({
             chapter,
             index: chapterIndex,
@@ -240,17 +249,21 @@ export class JsonToLinks {
       )
   }
 
-  makeChapterOperations({
-    chapter,
-    sectionLinkId,
-    index,
-  }: {
+  makeChapterOperations(options: {
     chapter: Chapter;
     sectionLinkId: number;
     index: number;
   }) {
     const operations: Array<SerialOperation> = [];
 
+    const fnLog = log.extend(this.makeArticleOperations.name)
+    fnLog({options})
+
+    const {
+      chapter,
+      sectionLinkId,
+      index,
+    } = options;
 
     const {
         operations: chapterInsertOperations,
@@ -296,16 +309,21 @@ export class JsonToLinks {
       )
   }
 
-  makeArticleOperations({
-    article,
-    chapterLinkId,
-    index,
-  }: {
+  makeArticleOperations(options: {
     article: Article;
     chapterLinkId: number;
     index: number;
   }) {
     const operations: Array<SerialOperation> = [];
+
+    const fnLog = log.extend(this.makeArticleOperations.name)
+    fnLog({options})
+
+    const {
+      article,
+      chapterLinkId,
+      index,
+    } = options;
 
     const {
         linkId,
@@ -319,6 +337,7 @@ export class JsonToLinks {
     operations.push(...articleInsertOperations);
 
     const clausesOperations = article.clauses.flatMap((clause, clauseIndex) => {
+      fnLog({clause, clauseIndex})
       const {operations} =  this.makeClauseOperations({ articleLinkId: linkId, clause, index: clauseIndex });
       return operations
     });
