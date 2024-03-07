@@ -352,6 +352,20 @@ export class JsonToLinks {
     return operations;
   }
 
+  makeClausesOperations({
+    clauses,
+    articleLinkId,
+  }: {
+    clauses: Array<Clause>;
+    articleLinkId: number;
+  }) {
+    const fnLog = log.extend(this.makeClausesOperations.name)
+    return clauses.flatMap((clause, clauseIndex) => {
+      fnLog({clause, clauseIndex})
+      return this.makeClauseOperations({ articleLinkId, clause, index: clauseIndex });
+    });
+  }
+
   makeClauseOperations({
     clause,
     articleLinkId,
