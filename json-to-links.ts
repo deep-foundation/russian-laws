@@ -392,7 +392,7 @@ export class JsonToLinks {
     parentLinkId: number;
     index: number;
   }) {
-    if (!index) {
+    if (typeof index !== 'number') {
       throw new Error("No index");
     }
     const operations: Array<SerialOperation> = [];
