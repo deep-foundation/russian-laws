@@ -71,13 +71,13 @@ it('import and export',  async() => {
     return text !== '' && text !== '\u00A0'; 
   });
 
-  // const {data: [{id: documentLinkId}]} = await deep.insert({
-  //   type_id: deep.idLocal("@deep-foundation/core", "Space")
-  // })
-  // log({documentLinkId})
-  // const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,documentLinkId: documentLinkId})
-  // log({processHtmlAndCreateLinksResult})
-  const documentLinkId = 147143
+  const {data: [{id: documentLinkId}]} = await deep.insert({
+    type_id: deep.idLocal("@deep-foundation/core", "Space")
+  })
+  log({documentLinkId})
+  const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,documentLinkId: documentLinkId})
+  log({processHtmlAndCreateLinksResult})
+  // const documentLinkId = 147143
   const {data: linksDownToDocument} = await deep.select({
     up: {
         parent_id: documentLinkId,
