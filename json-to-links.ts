@@ -43,7 +43,7 @@ export class JsonToLinks {
     this.indexTypeLinkId = _config.indexTypeLinkId;
   }
 
-  static async new(config: { deep: DeepClient; }) {
+  static async new(config: { deep: DeepClient }) {
     const { deep } = config;
     const containTypeLinkId = await deep.id("@deep-foundation/core", "Contain");
     const commentTypeLinkId = await deep.id("@deep-foundation/law", "Comment");
@@ -71,10 +71,10 @@ export class JsonToLinks {
     comments: Array<Comment>;
     parentLinkId: number;
   }) {
-    const fnLog = log.extend(this.makeCommentsOperations.name)
+    const fnLog = log.extend(this.makeCommentsOperations.name);
     return comments.flatMap((comment, commentIndex) => {
-      fnLog({comment, commentIndex})
-      const {operations} = this.makeCommentOperations({
+      fnLog({ comment, commentIndex });
+      const { operations } = this.makeCommentOperations({
         comment,
         index: commentIndex,
         parentLinkId: parentLinkId,
@@ -120,37 +120,51 @@ export class JsonToLinks {
     return count;
   }
 
-  async convert({ json, documentLinkId }: { json: LawPage, documentLinkId: number }) {
+  async convert({
+    json,
+    documentLinkId,
+  }: {
+    json: LawPage;
+    documentLinkId: number;
+  }) {
     const { deep } = this._config;
 
     const linksNumberToReserve = this.countLinksToReserve({ json });
-    log({linksNumberToReserve})
+    log({ linksNumberToReserve });
 
-      async function reserveItemsInBatches({ totalItems, batchSize }: { totalItems: number; batchSize: number; }) {
-        const reservedIds = [];
-        const numBatches = Math.ceil(totalItems / batchSize);
-        
-        for (let i = 0; i < numBatches; i++) {
-            const batch = Math.min(batchSize, totalItems - i * batchSize);
-            const reserved = await deep.reserve(batch);
-            reservedIds.push(...reserved);
-            log(`Reserved ${reservedIds.length} / ${totalItems}`)
-        }
-        
-        return reservedIds;
+    async function reserveItemsInBatches({
+      totalItems,
+      batchSize,
+    }: {
+      totalItems: number;
+      batchSize: number;
+    }) {
+      const reservedIds = [];
+      const numBatches = Math.ceil(totalItems / batchSize);
+
+      for (let i = 0; i < numBatches; i++) {
+        const batch = Math.min(batchSize, totalItems - i * batchSize);
+        const reserved = await deep.reserve(batch);
+        reservedIds.push(...reserved);
+        log(`Reserved ${reservedIds.length} / ${totalItems}`);
+      }
+
+      return reservedIds;
     }
-    
-    
-    const reservedIds = await reserveItemsInBatches({ totalItems: linksNumberToReserve, batchSize: 100 });
+
+    const reservedIds = await reserveItemsInBatches({
+      totalItems: linksNumberToReserve,
+      batchSize: 100,
+    });
     this._reservedLinkIds = reservedIds;
 
     // const reservedIds = await deep.reserve(linksToReserve);
     log({ reservedIds });
 
     const operations = this.makeSectionsOperations({
-        documentLinkId,
-        sections: json.sections
-    })
+      documentLinkId,
+      sections: json.sections,
+    });
 
     log({ operations });
 
@@ -158,7 +172,8 @@ export class JsonToLinks {
 
     // Split array into chunks
     const operationsChunks = operations.reduce((acc, _, index) => {
-      if (index % chunkSize === 0) acc.push(operations.slice(index, index + chunkSize));
+      if (index % chunkSize === 0)
+        acc.push(operations.slice(index, index + chunkSize));
       return acc;
     }, [] as Array<Array<SerialOperation>>);
 
@@ -166,51 +181,43 @@ export class JsonToLinks {
       const chunkResult = await deep.serial({ operations: operationsChunk });
       log({ chunkResult });
     }
-
   }
-
 
   makeSectionsOperations({
     sections,
-    documentLinkId
+    documentLinkId,
   }: {
     sections: Array<Section>;
     documentLinkId: number;
   }) {
-    const fnLog = log.extend(this.makeSectionsOperations.name)
+    const fnLog = log.extend(this.makeSectionsOperations.name);
     return sections.flatMap((section, sectionIndex) => {
-      fnLog({section, sectionIndex})
-        return this.makeSectionOperations({
-            section,
-            index: sectionIndex,
-            documentLinkId
-        });
-    })
+      fnLog({ section, sectionIndex });
+      return this.makeSectionOperations({
+        section,
+        index: sectionIndex,
+        documentLinkId,
+      });
+    });
   }
 
   makeSectionOperations(options: {
     section: Section;
     index: number;
-    documentLinkId: number
+    documentLinkId: number;
   }) {
-    const fnLog = log.extend(this.makeSectionOperations.name)
-    fnLog({options})
-    const {
-      section,
-      index,
-      documentLinkId
-    } = options;
+    const fnLog = log.extend(this.makeSectionOperations.name);
+    fnLog({ options });
+    const { section, index, documentLinkId } = options;
     const operations: Array<SerialOperation> = [];
 
-    const {
-        operations: sectionInsertOperations,
-        linkId
-    } = this.makeHtmlItemOperations({
+    const { operations: sectionInsertOperations, linkId } =
+      this.makeHtmlItemOperations({
         index,
         parentLinkId: documentLinkId,
         typeLinkId: this.sectionTypeLinkId,
-        value: section.title
-    })
+        value: section.title,
+      });
     operations.push(...sectionInsertOperations);
 
     const comments = section.comments;
@@ -221,8 +228,8 @@ export class JsonToLinks {
     operations.push(...commentOperations);
 
     const chapterOperations = this.makeChaptersOperations({
-        chapters: section.chapters,
-        sectionLinkId: linkId
+      chapters: section.chapters,
+      sectionLinkId: linkId,
     });
     operations.push(...chapterOperations);
 
@@ -236,17 +243,15 @@ export class JsonToLinks {
     chapters: Array<Chapter>;
     sectionLinkId: number;
   }) {
-    const fnLog = log.extend(this.makeChaptersOperations.name)
-    return chapters.flatMap(
-        (chapter, chapterIndex) => {
-          fnLog({chapter, chapterIndex})
-          return this.makeChapterOperations({
-            chapter,
-            index: chapterIndex,
-            sectionLinkId,
-          });
-        }
-      )
+    const fnLog = log.extend(this.makeChaptersOperations.name);
+    return chapters.flatMap((chapter, chapterIndex) => {
+      fnLog({ chapter, chapterIndex });
+      return this.makeChapterOperations({
+        chapter,
+        index: chapterIndex,
+        sectionLinkId,
+      });
+    });
   }
 
   makeChapterOperations(options: {
@@ -256,35 +261,29 @@ export class JsonToLinks {
   }) {
     const operations: Array<SerialOperation> = [];
 
-    const fnLog = log.extend(this.makeArticleOperations.name)
-    fnLog({options})
+    const fnLog = log.extend(this.makeArticleOperations.name);
+    fnLog({ options });
 
-    const {
-      chapter,
-      sectionLinkId,
-      index,
-    } = options;
+    const { chapter, sectionLinkId, index } = options;
 
-    const {
-        operations: chapterInsertOperations,
-        linkId
-    } = this.makeHtmlItemOperations({
+    const { operations: chapterInsertOperations, linkId } =
+      this.makeHtmlItemOperations({
         parentLinkId: sectionLinkId,
         typeLinkId: this.chapterTypeLinkId,
         value: chapter.title,
-        index
-    })
+        index,
+      });
     operations.push(...chapterInsertOperations);
 
     const commentsInsertOperations = this.makeCommentsOperations({
-        comments: chapter.comments,
-        parentLinkId: linkId,
-      });
+      comments: chapter.comments,
+      parentLinkId: linkId,
+    });
     operations.push(...commentsInsertOperations);
 
     const articleOperations = this.makeArticlesOperations({
-        articles: chapter.articles,
-        chapterLinkId: linkId,
+      articles: chapter.articles,
+      chapterLinkId: linkId,
     });
     operations.push(...articleOperations);
 
@@ -297,18 +296,16 @@ export class JsonToLinks {
   }: {
     articles: Array<Article>;
     chapterLinkId: number;
-  })  {
-    const fnLog = log.extend(this.makeArticlesOperations.name)
-    return articles.flatMap(
-        (article, articleIndex) => {
-          fnLog({article, articleIndex})
-          return this.makeArticleOperations({
-            article,
-            index: articleIndex,
-            chapterLinkId
-          });
-        }
-      )
+  }) {
+    const fnLog = log.extend(this.makeArticlesOperations.name);
+    return articles.flatMap((article, articleIndex) => {
+      fnLog({ article, articleIndex });
+      return this.makeArticleOperations({
+        article,
+        index: articleIndex,
+        chapterLinkId,
+      });
+    });
   }
 
   makeArticleOperations(options: {
@@ -318,36 +315,30 @@ export class JsonToLinks {
   }) {
     const operations: Array<SerialOperation> = [];
 
-    const fnLog = log.extend(this.makeArticleOperations.name)
-    fnLog({options})
+    const fnLog = log.extend(this.makeArticleOperations.name);
+    fnLog({ options });
 
-    const {
-      article,
-      chapterLinkId,
-      index,
-    } = options;
+    const { article, chapterLinkId, index } = options;
 
-    const {
-        linkId,
-        operations: articleInsertOperations
-    } = this.makeHtmlItemOperations({
+    const { linkId, operations: articleInsertOperations } =
+      this.makeHtmlItemOperations({
         index,
         parentLinkId: chapterLinkId,
         typeLinkId: this.articleTypeLinkId,
-        value: article.title
-    })
+        value: article.title,
+      });
     operations.push(...articleInsertOperations);
 
     const clausesOperations = this.makeClausesOperations({
       articleLinkId: linkId,
-      clauses: article.clauses
-    })
+      clauses: article.clauses,
+    });
     operations.push(...clausesOperations);
 
     const commentsOperations = this.makeCommentsOperations({
-        comments: article.comments,
-        parentLinkId: linkId,
-    }) ;
+      comments: article.comments,
+      parentLinkId: linkId,
+    });
     operations.push(...commentsOperations);
 
     return operations;
@@ -360,10 +351,14 @@ export class JsonToLinks {
     clauses: Array<Clause>;
     articleLinkId: number;
   }) {
-    const fnLog = log.extend(this.makeClausesOperations.name)
+    const fnLog = log.extend(this.makeClausesOperations.name);
     return clauses.flatMap((clause, clauseIndex) => {
-      fnLog({clause, clauseIndex})
-      const {operations} = this.makeClauseOperations({ articleLinkId, clause, index: clauseIndex });
+      fnLog({ clause, clauseIndex });
+      const { operations } = this.makeClauseOperations({
+        articleLinkId,
+        clause,
+        index: clauseIndex,
+      });
       return operations;
     });
   }
@@ -378,11 +373,11 @@ export class JsonToLinks {
     index: number;
   }) {
     const operations = this.makeHtmlItemOperations({
-        index,
-        parentLinkId: articleLinkId,
-        typeLinkId: this.clauseTypeLinkId,
-        value: clause.text
-    })
+      index,
+      parentLinkId: articleLinkId,
+      typeLinkId: this.clauseTypeLinkId,
+      value: clause.text,
+    });
     return operations;
   }
 
@@ -390,21 +385,21 @@ export class JsonToLinks {
     value,
     parentLinkId,
     index,
-    typeLinkId
+    typeLinkId,
   }: {
     typeLinkId: number;
-    value: string|number|object;
+    value: string | number | object;
     parentLinkId: number;
     index: number;
   }) {
-    if(!index){ 
-      throw new Error("No index")
+    if (!index) {
+      throw new Error("No index");
     }
     const operations: Array<SerialOperation> = [];
     const linkId = this._reservedLinkIds.pop();
     const containLinkId = this._reservedLinkIds.pop();
     const indexLinkId = this._reservedLinkIds.pop();
-    log({ linkId, containLinkId,indexLinkId });
+    log({ linkId, containLinkId, indexLinkId });
     if (!linkId || !containLinkId || !indexLinkId) {
       throw new Error("No reserved id");
     }
@@ -418,7 +413,7 @@ export class JsonToLinks {
     });
     operations.push(itemInsertOperation);
     const stringInsertOperation = createSerialOperation({
-      table: typeof value + 's' as 'strings' | 'numbers' | 'objects',
+      table: (typeof value + "s") as "strings" | "numbers" | "objects",
       type: "insert",
       objects: {
         link_id: linkId,
@@ -468,10 +463,10 @@ export class JsonToLinks {
     });
     operations.push(containForIndexInsertOperation);
     return {
-        operations,
-        linkId,
-        indexLinkId,
-        containLinkId
+      operations,
+      linkId,
+      indexLinkId,
+      containLinkId,
     };
   }
 
@@ -485,10 +480,10 @@ export class JsonToLinks {
     index: number;
   }) {
     return this.makeHtmlItemOperations({
-        index,
-        parentLinkId,
-        typeLinkId: this.commentTypeLinkId,
-        value: comment.text
-    })
+      index,
+      parentLinkId,
+      typeLinkId: this.commentTypeLinkId,
+      value: comment.text,
+    });
   }
 }
