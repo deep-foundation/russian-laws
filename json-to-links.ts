@@ -362,6 +362,9 @@ export class JsonToLinks {
     parentLinkId: number;
     index: number;
   }) {
+    if(!index){ 
+      throw new Error("No index")
+    }
     const operations: Array<SerialOperation> = [];
     const linkId = this._reservedLinkIds.pop();
     const containLinkId = this._reservedLinkIds.pop();
