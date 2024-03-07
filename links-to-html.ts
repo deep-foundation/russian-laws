@@ -34,6 +34,7 @@ export async function linksToHtml({
         `<p class="H">${chapterOrCommentTitle}</p>\n`;
 
       const indexLinks = chapterOrCommentLink.outByType[indexTypeLinkId];
+      log({indexLinks})
       const articleOrCommentLinks = indexLinks?.map((link) => link.to);
       const chapterChildrenIndentAmount = 4;
       articleOrCommentLinks?.forEach((articleOrCommentLink) => {
