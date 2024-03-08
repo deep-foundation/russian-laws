@@ -13,33 +13,33 @@ export async function linksToHtml({
   const containTypeLinkId = deep.idLocal("@deep-foundation/core", "Contain");
   const indexTypeLinkId = await deep.id("@deep-foundation/law", "Index");
   const documentLink = deep.minilinks.byId[documentRootId];
-  log({ documentLink });
+  // log({ documentLink });
   const indexLinks = documentLink.outByType[indexTypeLinkId];
   const sectionLinks = indexLinks?.map((link) => link.to);
-  log({ sections: sectionLinks });
+  // log({ sections: sectionLinks });
   sectionLinks.forEach((sectionLink) => {
     const sectionTitle = sectionLink["string"].value;
-    log({ sectionTitle });
+    // log({ sectionTitle });
     htmlContent += `<p class="H">${sectionTitle}</p>\n`;
 
     const indexLinks = sectionLink.outByType[indexTypeLinkId];
     const chapterOrCommentLinks = indexLinks.map((link) => link.to);
-    log({ chapterOrCommentLinks });
+    // log({ chapterOrCommentLinks });
     const sectionChildrenIndentAmount = 2;
     chapterOrCommentLinks?.forEach((chapterOrCommentLink) => {
       const chapterOrCommentTitle = chapterOrCommentLink["string"].value;
-      log({ chapterOrCommentTitle });
+      // log({ chapterOrCommentTitle });
       htmlContent +=
         " ".repeat(sectionChildrenIndentAmount) +
         `<p class="H">${chapterOrCommentTitle}</p>\n`;
 
       const indexLinks = chapterOrCommentLink.outByType[indexTypeLinkId];
-      log({indexLinks})
+      // log({indexLinks})
       const articleOrCommentLinks = indexLinks?.map((link) => link.to);
       const chapterChildrenIndentAmount = 4;
       articleOrCommentLinks?.forEach((articleOrCommentLink) => {
         const articleOrCommentTitle = articleOrCommentLink["string"].value;
-        log({ articleOrCommentLink });
+        // log({ articleOrCommentLink });
         htmlContent +=
           " ".repeat(chapterChildrenIndentAmount) +
           `<p class="H">${articleOrCommentTitle}</p>\n`;
@@ -49,7 +49,7 @@ export async function linksToHtml({
         const articleChildrenIndentAmount = 6;
         clauseOrCommentLinks?.forEach((clauseOrCommentLink) => {
           const clauseOrCommentTitle = clauseOrCommentLink["string"].value;
-          log({ clauseOrCommentTitle });
+          // log({ clauseOrCommentTitle });
           htmlContent +=
             " ".repeat(articleChildrenIndentAmount) +
             `<p>${clauseOrCommentTitle}</p>\n`;
@@ -59,6 +59,6 @@ export async function linksToHtml({
   });
 
   const result = `<html><body>${htmlContent}</body></html>`;
-  log({ result });
+  // log({ result });
   return result;
 }
