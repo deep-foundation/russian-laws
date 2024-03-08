@@ -49,7 +49,7 @@
 
       // The URL of the WebSocket inspector to attach to.
       // This value can be retrieved by using `bun --inspect`.
-      "url": "ws://localhost:6499/",
+      "url": "ws://6499-deepfoundation-dev-wuas0cger4r.ws-us108.gitpod.io/a5be1bkr0k",
     }
   ]
 }

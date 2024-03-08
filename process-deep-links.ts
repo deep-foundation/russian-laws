@@ -1,7 +1,7 @@
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
 import { log } from "./log";
 
-function processDeepLinks({ deep, rootId }: { deep: DeepClient; rootId: number; }) {
+export function processDeepLinks({ deep, rootId }: { deep: DeepClient; rootId: number; }) {
     const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
     // Получаем все связи типа 'Contain' для корневого узла
     const sectionLinks = deep.minilinks.byId[rootId].outByType[containTypeLinkId];

@@ -1,5 +1,4 @@
 import { Article } from "./article.js";
-import type { Clause } from "./clause.js";
 import { Comment } from "./comment.js";
 
 export type ChapterChild = Article | Comment;

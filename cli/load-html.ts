@@ -1,15 +1,12 @@
 import axios from 'axios';
 import iconv from 'iconv-lite';
-import jsdom from "jsdom";
-const { JSDOM } = jsdom;
-import fs from 'fs';
 import path from 'path';
 import { saveFile } from '../files.js';
-import { program } from 'commander';
 import cheerio from 'cheerio';
 import {html as beautify} from 'js-beautify';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { log } from '../log.js';
 
 const options = yargs(hideBin(process.argv))
   .usage(`$0 [Options]`, `Description of the program`)

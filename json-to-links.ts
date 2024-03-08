@@ -1,6 +1,5 @@
 import type {
   DeepClient,
-  DeepClientResult,
   SerialOperation,
 } from "@deep-foundation/deeplinks/imports/client.js";
 import { Comment } from "./comment.js";
@@ -106,7 +105,7 @@ export class JsonToLinks {
             const hasChildren = "children" in articleOrComment;
             if (hasChildren) {
               const article = articleOrComment;
-              article.children.forEach((commentOrClause) => {
+              article.children.forEach((_commentOrClause) => {
                 count++; // clause
                 count++; // contain for clause
                 count++; // index for clause
