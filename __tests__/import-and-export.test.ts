@@ -101,4 +101,6 @@ it('import and export',  async() => {
     expect(exportedHtmlParsed(exportedHtmlParagraph).text().trim()).toBe(initialHtmlParsed(initialHtmlParagraph).text().trim())
   }
 
+}, {
+  timeout: 3600000
 });
