@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
+import { JSDOM } from "jsdom";
 import { saveFile } from '../files.js';
+import { program } from 'commander';
 import path from 'path';
 import fs from "fs";
 import yargs from 'yargs';

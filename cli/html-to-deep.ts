@@ -14,74 +14,69 @@ import {cleanEnv, str} from 'envalid'
 import { htmlToJson } from '../html-to-json.js';
 import { htmlToLinks } from '../html-to-links.js';
 import path from 'path'
-import { log } from '../log.js';
 
-main()
+const env = cleanEnv(process.env, {
+  DEEP_TOKEN: str(),
+})
 
-async function main() {
-  const env = cleanEnv(process.env, {
-    DEEP_TOKEN: str(),
+const options = yargs(hideBin(process.argv))
+  .usage(`$0 [Options]`, `Description of the program`)
+  .options({
+    "graphql-path": {
+      alias: "gql-p",
+      description: "Path to GraphQL endpoint",
+      type: "string",
+      demandOption: true,
+    },
+    ssl: {
+      alias: "s",
+      description: "Should use SSL",
+      type: "boolean",
+    },
+    'source-directory': {
+      alias: "s",
+      description: "Source directory",
+      type: "string",
+      default: './data/html'
+    },
+    'source-file-name': {
+      alias: "n",
+      description: "Source file name",
+      type: "string",
+      demandOption: true
+    },
+    'source-file-extension': {
+      alias: "e",
+      description: "Source file extension",
+      type: "string",
+      default: '.html'
+    },
+    'target-space-id': {
+      alias: "t",
+      description: "Target space id",
+      type: "number",
+      demandOption: true
+    }
   })
-  
-  const options = yargs(hideBin(process.argv))
-    .usage(`$0 [Options]`, `Description of the program`)
-    .options({
-      "graphql-path": {
-        alias: "gql-p",
-        description: "Path to GraphQL endpoint",
-        type: "string",
-        demandOption: true,
-      },
-      ssl: {
-        alias: "s",
-        description: "Should use SSL",
-        type: "boolean",
-      },
-      'source-directory': {
-        alias: "s",
-        description: "Source directory",
-        type: "string",
-        default: './data/html'
-      },
-      'source-file-name': {
-        alias: "n",
-        description: "Source file name",
-        type: "string",
-        demandOption: true
-      },
-      'source-file-extension': {
-        alias: "e",
-        description: "Source file extension",
-        type: "string",
-        default: '.html'
-      },
-      'target-space-id': {
-        alias: "t",
-        description: "Target space id",
-        type: "number",
-        demandOption: true
-      }
-    })
-    .strict()
-    .parseSync();
-  
-  const apolloClient = generateApolloClient({
-      path: options.graphqlPath,
-      ssl: options.ssl,
-    });
-    const unloginedDeep = new DeepClient({ apolloClient });
-    const guestLoginResult = await unloginedDeep.guest();
-    const guestDeep = new DeepClient({ deep: unloginedDeep, ...guestLoginResult });
-    const adminLoginResult = await guestDeep.login({
-      token: env.DEEP_TOKEN,
-    });
-    const deep = new DeepClient({ deep: guestDeep, ...adminLoginResult });
-  
-  const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
-  log('containTypeLinkId', containTypeLinkId);
-  
-  const sourceFullPath = path.join(options.sourceDirectory, options.sourceFileName);
-  let html = fs.readFileSync(sourceFullPath, 'utf8');
-  htmlToLinks({deep,html,documentLinkId: options.targetSpaceId});
-}
+  .strict()
+  .parseSync();
+
+const apolloClient = generateApolloClient({
+    path: options.graphqlPath,
+    ssl: options.ssl,
+  });
+  const unloginedDeep = new DeepClient({ apolloClient });
+  const guestLoginResult = await unloginedDeep.guest();
+  const guestDeep = new DeepClient({ deep: unloginedDeep, ...guestLoginResult });
+  const adminLoginResult = await guestDeep.login({
+    token: env.DEEP_TOKEN,
+  });
+  const deep = new DeepClient({ deep: guestDeep, ...adminLoginResult });
+
+const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')
+log('containTypeLinkId', containTypeLinkId);
+
+const sourceFullPath = path.join(options.sourceDirectory, options.sourceFileName);
+let html = fs.readFileSync(sourceFullPath, 'utf8');
+htmlToLinks({deep,html,documentLinkId: options.targetSpaceId});
 

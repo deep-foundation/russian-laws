@@ -1,4 +1,5 @@
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
+import { log } from "./log";
 
 export async function linksToHtml({
   deep,
@@ -9,6 +10,7 @@ export async function linksToHtml({
 }) {
   let htmlContent = "";
 
+  const containTypeLinkId = deep.idLocal("@deep-foundation/core", "Contain");
   const indexTypeLinkId = await deep.id("@deep-foundation/law", "Index");
   const documentLink = deep.minilinks.byId[documentRootId];
   // log({ documentLink });

@@ -3,14 +3,18 @@ import path from 'path'
 import { htmlToLinks } from '../html-to-links.js';
 import { DeepClient } from '@deep-foundation/deeplinks/imports/client.js';
 import { generateApolloClient } from '@deep-foundation/hasura/client.js';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 import {linksToHtml} from '../links-to-html.js'
 import { log } from '../log.js';
-import {expect, beforeAll, it} from 'bun:test'
+import {expect, test,beforeAll, describe, it} from 'bun:test'
 import { bool, cleanEnv, str } from 'envalid';
 import dotenv from 'dotenv'
 dotenv.config({path: '.env.tests.local'});
 import {diffLines} from 'diff';
 import cheerio from 'cheerio'
+import { inspect } from 'bun';
+import util from 'util'
 
 const env = cleanEnv(process.env, {
   GRAPHQL_PATH: str({desc: "Path to GraphQL endpoint"}),
