@@ -171,11 +171,10 @@ export class JsonToLinks {
     const chunkSize = 100;
 
     // Split array into chunks
-    const operationsChunks = operations.reduce((acc, _, index) => {
-      if (index % chunkSize === 0)
-        acc.push(operations.slice(index, index + chunkSize));
-      return acc;
-    }, [] as Array<Array<SerialOperation>>);
+    const operationsChunks = [];
+    for (let i = 0; i < operations.length; i += chunkSize) {
+      operationsChunks.push(operations.slice(i, i + chunkSize));
+    }
 
     for (const operationsChunk of operationsChunks) {
       const chunkResult = await deep.serial({ operations: operationsChunk });
