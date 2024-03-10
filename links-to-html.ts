@@ -14,7 +14,8 @@ export async function linksToHtml({
   const indexTypeLinkId = await deep.id("@deep-foundation/law", "Index");
   const documentLink = deep.minilinks.byId[documentRootId];
   log({ documentLink });
-  const indexLinks = documentLink.outByType[indexTypeLinkId];
+  const indexLinks = documentLink.outByType[indexTypeLinkId]?.sort((a,b) => a.value.value - b.value.value);
+  log({indexLinks})
   const sectionLinks = indexLinks?.map((link) => link.to);
   log({ sections: sectionLinks });
   sectionLinks.forEach((sectionLink) => {
@@ -22,7 +23,7 @@ export async function linksToHtml({
     log({ sectionTitle });
     htmlContent += `<p class="H">${sectionTitle}</p>\n`;
 
-    const indexLinks = sectionLink.outByType[indexTypeLinkId];
+    const indexLinks = sectionLink.outByType[indexTypeLinkId]?.sort((a,b) => a.value.value - b.value.value);
     const chapterOrCommentLinks = indexLinks.map((link) => link.to);
     log({ chapterOrCommentLinks });
     const sectionChildrenIndentAmount = 2;
@@ -33,7 +34,7 @@ export async function linksToHtml({
         " ".repeat(sectionChildrenIndentAmount) +
         `<p class="H">${chapterOrCommentTitle}</p>\n`;
 
-      const indexLinks = chapterOrCommentLink.outByType[indexTypeLinkId];
+      const indexLinks = chapterOrCommentLink.outByType[indexTypeLinkId]?.sort((a,b) => a.value.value - b.value.value);
       log({indexLinks})
       const articleOrCommentLinks = indexLinks?.map((link) => link.to);
       const chapterChildrenIndentAmount = 4;
@@ -44,7 +45,7 @@ export async function linksToHtml({
           " ".repeat(chapterChildrenIndentAmount) +
           `<p class="H">${articleOrCommentTitle}</p>\n`;
 
-        const indexLinks = articleOrCommentLink.outByType[indexTypeLinkId];
+        const indexLinks = articleOrCommentLink.outByType[indexTypeLinkId]?.sort((a,b) => a.value.value - b.value.value);
         const clauseOrCommentLinks = indexLinks?.map((link) => link.to);
         const articleChildrenIndentAmount = 6;
         clauseOrCommentLinks?.forEach((clauseOrCommentLink) => {
