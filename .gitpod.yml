@@ -10,6 +10,3 @@ tasks:
       # Install dependencies
       bun install
       
-ports:
-  - port: 3000
-    onOpen: open-preview
