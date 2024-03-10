@@ -24,6 +24,7 @@ export async function linksToHtml({
     htmlContent += `<p class="H">${sectionTitle}</p>\n`;
 
     const indexLinks = sectionLink.outByType[indexTypeLinkId]?.sort((a,b) => a.value.value - b.value.value);
+    log({indexLinks})
     const chapterOrCommentLinks = indexLinks.map((link) => link.to);
     log({ chapterOrCommentLinks });
     const sectionChildrenIndentAmount = 2;
@@ -37,6 +38,7 @@ export async function linksToHtml({
       const indexLinks = chapterOrCommentLink.outByType[indexTypeLinkId]?.sort((a,b) => a.value.value - b.value.value);
       log({indexLinks})
       const articleOrCommentLinks = indexLinks?.map((link) => link.to);
+      log({articleOrCommentLinks})
       const chapterChildrenIndentAmount = 4;
       articleOrCommentLinks?.forEach((articleOrCommentLink) => {
         const articleOrCommentTitle = articleOrCommentLink["string"].value;
@@ -46,8 +48,10 @@ export async function linksToHtml({
           `<p class="H">${articleOrCommentTitle}</p>\n`;
 
         const indexLinks = articleOrCommentLink.outByType[indexTypeLinkId]?.sort((a,b) => a.value.value - b.value.value);
-        const clauseOrCommentLinks = indexLinks?.map((link) => link.to);
-        const articleChildrenIndentAmount = 6;
+      log({indexLinks})
+      const clauseOrCommentLinks = indexLinks?.map((link) => link.to);
+      log({clauseOrCommentLinks})
+      const articleChildrenIndentAmount = 6;
         clauseOrCommentLinks?.forEach((clauseOrCommentLink) => {
           const clauseOrCommentTitle = clauseOrCommentLink["string"].value;
           log({ clauseOrCommentTitle });
