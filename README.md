@@ -18,3 +18,8 @@ npx --yes tsx cli/load-html.ts --name="102041891" --source-document-id=102041891
 ```bash
 npx --yes tsx cli/html-to-json.ts --source-file-name 605577371
 ```
+
+# For developing
+- [Install bun](https://bun.sh/docs/installation)
+- Install dependencies (`bun install`)
+- Run tests (`bun test`)
