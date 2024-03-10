@@ -168,17 +168,23 @@ export class JsonToLinks {
 
     log({ operations });
 
-    const chunkSize = 100;
+    // const chunkSize = 100;
 
-    // Split array into chunks
-    const operationsChunks = [];
-    for (let i = 0; i < operations.length; i += chunkSize) {
-      operationsChunks.push(operations.slice(i, i + chunkSize));
-    }
+    // // Split array into chunks
+    // const operationsChunks = [];
+    // for (let i = 0; i < operations.length; i += chunkSize) {
+    //   operationsChunks.push(operations.slice(i, i + chunkSize));
+    // }
 
-    for (const operationsChunk of operationsChunks) {
-      const chunkResult = await deep.serial({ operations: operationsChunk });
-      log({ chunkResult });
+    // for (const operationsChunk of operationsChunks) {
+    //   const chunkResult = await deep.serial({ operations: operationsChunk });
+    //   log({ chunkResult });
+    // }
+
+    for (const operation of operations) {
+      await deep.serial({
+        operations: [operation]
+      })
     }
   }
 
