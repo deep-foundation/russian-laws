@@ -2,7 +2,7 @@ import { JSDOM } from "jsdom";
 import { Section } from "./section.js";
 import { Chapter } from "./chapter.js";
 import { Article } from "./article.js";
-import type { Comment } from "./comment.js";
+import { Comment } from "./comment.js";
 import type { HtmlItem } from "./html-item.js";
 import { Clause } from "./clause.js";
 
@@ -63,7 +63,7 @@ export function htmlToJson({ html }: { html: string }) {
             parent.children.push(article);
         }
       } else if (isComment) {
-        const comment: Comment = { text: htmlContent };
+        const comment = new Comment({ text: htmlContent });
         if (commentOrClauseParent) {
         //   @ts-ignore I have no idea why error is here. All (SectionChild|ChapterChild|ArticleChild) match Comment
           commentOrClauseParent.children.push(comment);
