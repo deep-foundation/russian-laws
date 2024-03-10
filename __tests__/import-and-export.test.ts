@@ -77,7 +77,6 @@ it('import and export',  async() => {
   log({documentLinkId})
   const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,documentLinkId: documentLinkId})
   log({processHtmlAndCreateLinksResult})
-  // const documentLinkId = 145087
   const {data: linksDownToDocument} = await deep.select({
     up: {
         parent_id: documentLinkId,
