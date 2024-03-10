@@ -11,6 +11,7 @@ import { Chapter } from "./chapter.js";
 import { Article } from "./article.js";
 import { Section } from "./section.js";
 import { Clause } from "./clause.js";
+import type { HtmlItem } from "./html-item.js";
 
 export class JsonToLinks {
   private _reservedLinkIds: number[] = [];
@@ -61,25 +62,6 @@ export class JsonToLinks {
       indexTypeLinkId,
       sectionTypeLinkId,
       ...config,
-    });
-  }
-
-  makeCommentsOperations({
-    comments,
-    parentLinkId,
-  }: {
-    comments: Array<Comment>;
-    parentLinkId: number;
-  }) {
-    const fnLog = log.extend(this.makeCommentsOperations.name);
-    return comments.flatMap((comment, commentIndex) => {
-      fnLog({ comment, commentIndex });
-      const { operations } = this.makeCommentOperations({
-        comment,
-        index: commentIndex,
-        parentLinkId: parentLinkId,
-      });
-      return operations;
     });
   }
 
@@ -161,9 +143,9 @@ export class JsonToLinks {
     // const reservedIds = await deep.reserve(linksToReserve);
     log({ reservedIds });
 
-    const operations = this.makeSectionsOperations({
-      documentLinkId,
-      sections: json.sections,
+    const operations = this.makeHtmlItemsOperations({
+      parentLinkId: documentLinkId,
+      items: json.sections
     });
 
     log({ operations });
@@ -188,212 +170,33 @@ export class JsonToLinks {
     }
   }
 
-  makeSectionsOperations({
-    sections,
-    documentLinkId,
+  makeHtmlItemsOperations({
+    items: items,
+    parentLinkId,
   }: {
-    sections: Array<Section>;
-    documentLinkId: number;
+    items: Array<HtmlItem>;
+    parentLinkId: number;
   }) {
-    const fnLog = log.extend(this.makeSectionsOperations.name);
-    return sections.flatMap((section, sectionIndex) => {
-      fnLog({ section, sectionIndex });
-      return this.makeSectionOperations({
-        section,
-        index: sectionIndex,
-        documentLinkId,
-      });
-    });
-  }
-
-  makeSectionOperations(options: {
-    section: Section;
-    index: number;
-    documentLinkId: number;
-  }) {
-    const fnLog = log.extend(this.makeSectionOperations.name);
-    fnLog({ options });
-    const { section, index, documentLinkId } = options;
-    const operations: Array<SerialOperation> = [];
-
-    const { operations: sectionInsertOperations, linkId } =
-      this.makeHtmlItemOperations({
+    const fnLog = log.extend(this.makeHtmlItemsOperations.name);
+    return items.flatMap((item, index) => {
+      fnLog({ item, index });
+      const { operations } = this.makeHtmlItemOperations({
         index,
-        parentLinkId: documentLinkId,
-        typeLinkId: this.sectionTypeLinkId,
-        value: section.title,
-      });
-    operations.push(...sectionInsertOperations);
-
-    const comments = section.comments;
-    const commentOperations = this.makeCommentsOperations({
-      comments,
-      parentLinkId: linkId,
-    });
-    operations.push(...commentOperations);
-
-    const chapterOperations = this.makeChaptersOperations({
-      chapters: section.chapters,
-      sectionLinkId: linkId,
-    });
-    operations.push(...chapterOperations);
-
-    return operations;
-  }
-
-  makeChaptersOperations({
-    chapters,
-    sectionLinkId,
-  }: {
-    chapters: Array<Chapter>;
-    sectionLinkId: number;
-  }) {
-    const fnLog = log.extend(this.makeChaptersOperations.name);
-    return chapters.flatMap((chapter, chapterIndex) => {
-      fnLog({ chapter, chapterIndex });
-      return this.makeChapterOperations({
-        chapter,
-        index: chapterIndex,
-        sectionLinkId,
-      });
-    });
-  }
-
-  makeChapterOperations(options: {
-    chapter: Chapter;
-    sectionLinkId: number;
-    index: number;
-  }) {
-    const operations: Array<SerialOperation> = [];
-
-    const fnLog = log.extend(this.makeArticleOperations.name);
-    fnLog({ options });
-
-    const { chapter, sectionLinkId, index } = options;
-
-    const { operations: chapterInsertOperations, linkId } =
-      this.makeHtmlItemOperations({
-        parentLinkId: sectionLinkId,
-        typeLinkId: this.chapterTypeLinkId,
-        value: chapter.title,
-        index,
-      });
-    operations.push(...chapterInsertOperations);
-
-    const commentsInsertOperations = this.makeCommentsOperations({
-      comments: chapter.comments,
-      parentLinkId: linkId,
-    });
-    operations.push(...commentsInsertOperations);
-
-    const articleOperations = this.makeArticlesOperations({
-      articles: chapter.articles,
-      chapterLinkId: linkId,
-    });
-    operations.push(...articleOperations);
-
-    return operations;
-  }
-
-  makeArticlesOperations({
-    articles,
-    chapterLinkId,
-  }: {
-    articles: Array<Article>;
-    chapterLinkId: number;
-  }) {
-    const fnLog = log.extend(this.makeArticlesOperations.name);
-    return articles.flatMap((article, articleIndex) => {
-      fnLog({ article, articleIndex });
-      return this.makeArticleOperations({
-        article,
-        index: articleIndex,
-        chapterLinkId,
-      });
-    });
-  }
-
-  makeArticleOperations(options: {
-    article: Article;
-    chapterLinkId: number;
-    index: number;
-  }) {
-    const operations: Array<SerialOperation> = [];
-
-    const fnLog = log.extend(this.makeArticleOperations.name);
-    fnLog({ options });
-
-    const { article, chapterLinkId, index } = options;
-
-    const { linkId, operations: articleInsertOperations } =
-      this.makeHtmlItemOperations({
-        index,
-        parentLinkId: chapterLinkId,
-        typeLinkId: this.articleTypeLinkId,
-        value: article.title,
-      });
-    operations.push(...articleInsertOperations);
-
-    const clausesOperations = this.makeClausesOperations({
-      articleLinkId: linkId,
-      clauses: article.clauses,
-    });
-    operations.push(...clausesOperations);
-
-    const commentsOperations = this.makeCommentsOperations({
-      comments: article.comments,
-      parentLinkId: linkId,
-    });
-    operations.push(...commentsOperations);
-
-    return operations;
-  }
-
-  makeClausesOperations({
-    clauses,
-    articleLinkId,
-  }: {
-    clauses: Array<Clause>;
-    articleLinkId: number;
-  }) {
-    const fnLog = log.extend(this.makeClausesOperations.name);
-    return clauses.flatMap((clause, clauseIndex) => {
-      fnLog({ clause, clauseIndex });
-      const { operations } = this.makeClauseOperations({
-        articleLinkId,
-        clause,
-        index: clauseIndex,
+        parentLinkId,
+        item,
       });
       return operations;
     });
   }
 
-  makeClauseOperations({
-    clause,
-    articleLinkId,
-    index,
-  }: {
-    clause: Clause;
-    articleLinkId: number;
-    index: number;
-  }) {
-    const operations = this.makeHtmlItemOperations({
-      index,
-      parentLinkId: articleLinkId,
-      typeLinkId: this.clauseTypeLinkId,
-      value: clause.text,
-    });
-    return operations;
-  }
+
 
   makeHtmlItemOperations({
-    value,
+    item: item,
     parentLinkId,
     index,
-    typeLinkId,
   }: {
-    typeLinkId: number;
-    value: string | number | object;
+    item: HtmlItem;
     parentLinkId: number;
     index: number;
   }) {
@@ -408,6 +211,28 @@ export class JsonToLinks {
     if (!linkId || !containLinkId || !indexLinkId) {
       throw new Error("No reserved id");
     }
+    let typeLinkId: number;
+    if(item instanceof Section) {
+      typeLinkId = this.sectionTypeLinkId
+    } else if (item instanceof Chapter) {
+      typeLinkId = this.chapterTypeLinkId
+    } else if (item instanceof Article) {
+      typeLinkId = this.articleTypeLinkId
+    } else if (item instanceof Comment) {
+      typeLinkId = this.commentTypeLinkId
+    } else if (item instanceof Clause) {
+      typeLinkId = this.clauseTypeLinkId
+    } else {
+      throw new Error(`Type of ${item} is not Section/Chapter/Article/Comment/Clause`)
+    }
+    let value: string;
+    if(item instanceof Section || item instanceof Chapter || item instanceof Article) {
+      value = item.title
+    } else if (item instanceof Comment || item instanceof Clause) {
+      value = item.text
+    } else {
+      throw new Error(`Type of ${item} is not Section/Chapter/Article/Comment/Clause`)
+    }
     const itemInsertOperation = createSerialOperation({
       table: "links",
       type: "insert",
@@ -418,7 +243,7 @@ export class JsonToLinks {
     });
     operations.push(itemInsertOperation);
     const stringInsertOperation = createSerialOperation({
-      table: (typeof value + "s") as "strings" | "numbers" | "objects",
+      table: "strings",
       type: "insert",
       objects: {
         link_id: linkId,
@@ -467,6 +292,23 @@ export class JsonToLinks {
       },
     });
     operations.push(containForIndexInsertOperation);
+
+    const isComment = item instanceof Comment;
+    const isClause = item instanceof Clause
+    const hasChildren = !isComment && !isClause
+    if(hasChildren) {
+      const children = item.children
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        const {operations: childOperations} = this.makeHtmlItemOperations({
+          index: i,
+          parentLinkId: linkId,
+          item: child
+        })
+        operations.push(...childOperations)
+      }
+    }
+
     return {
       operations,
       linkId,
@@ -475,20 +317,5 @@ export class JsonToLinks {
     };
   }
 
-  makeCommentOperations({
-    comment,
-    parentLinkId,
-    index,
-  }: {
-    comment: Comment;
-    parentLinkId: number;
-    index: number;
-  }) {
-    return this.makeHtmlItemOperations({
-      index,
-      parentLinkId,
-      typeLinkId: this.commentTypeLinkId,
-      value: comment.text,
-    });
-  }
+
 }
