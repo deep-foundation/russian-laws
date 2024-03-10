@@ -77,7 +77,7 @@ it('import and export',  async() => {
   log({documentLinkId})
   const processHtmlAndCreateLinksResult = await htmlToLinks({deep, html: initialHtml,documentLinkId: documentLinkId})
   log({processHtmlAndCreateLinksResult})
-  // const documentLinkId = 147143
+  // const documentLinkId = 145087
   const {data: linksDownToDocument} = await deep.select({
     up: {
         parent_id: documentLinkId,
@@ -95,11 +95,21 @@ it('import and export',  async() => {
   fsExtra.writeFileSync('initial.html', initialHtml, {encoding: 'utf-8'})
   fsExtra.writeFileSync('exported.html', exportedHtml, {encoding: 'utf-8'})
   fsExtra.writeFileSync('diff.txt', JSON.stringify(diffResult, null, 2), {encoding: 'utf-8'})
+  const errors: Array<string> = []
   for (let i = 0; i < initialHtmlParagraphsAfterTarget.length; i++) {
     const initialHtmlParagraph = initialHtmlParagraphsAfterTarget[i];
     const exportedHtmlParagraph = exportedHtmlParagraphs[i];
-    expect(exportedHtmlParsed(exportedHtmlParagraph).text().trim()).toBe(initialHtmlParsed(initialHtmlParagraph).text().trim())
+    const trimmedInitialHtmlParagraphText = initialHtmlParsed(initialHtmlParagraph).text().trim();
+    const trimmedExportedHtmlParagraphText = initialHtmlParsed(exportedHtmlParagraph).text().trim();
+    if(trimmedInitialHtmlParagraphText !== trimmedExportedHtmlParagraphText) {
+      errors.push(
+        `Line: ${i}. 
+Expected: ${trimmedInitialHtmlParagraphText}
+Got: ${trimmedExportedHtmlParagraphText}`
+      )
+    }
   }
+  expect(errors).toBeEmpty()
 
 }, {
   timeout: 3600000
