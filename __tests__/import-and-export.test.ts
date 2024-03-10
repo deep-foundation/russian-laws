@@ -103,7 +103,7 @@ it('import and export',  async() => {
     const trimmedExportedHtmlParagraphText = initialHtmlParsed(exportedHtmlParagraph).text().trim();
     if(trimmedInitialHtmlParagraphText !== trimmedExportedHtmlParagraphText) {
       errors.push(
-        `Line: ${i}. 
+        `Line: ${i+1}. 
 Expected: ${trimmedInitialHtmlParagraphText}
 Got: ${trimmedExportedHtmlParagraphText}`
       )
