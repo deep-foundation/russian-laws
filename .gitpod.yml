@@ -10,10 +10,3 @@ tasks:
       # Install dependencies
       bun install
       
-    command: |
-      # Run project
-      bun run index.ts
-
-ports:
-  - port: 3000
-    onOpen: open-preview
