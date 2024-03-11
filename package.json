@@ -31,6 +31,7 @@
     "dotenv": "^16.4.5",
     "envalid": "^8.0.0",
     "fs-extra": "^11.2.0",
+    "glob": "^10.3.10",
     "iconv-lite": "^0.6.3",
     "js-beautify": "^1.14.11",
     "jsdom": "^22.1.0",
