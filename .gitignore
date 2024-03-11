@@ -131,3 +131,12 @@ dist
 
 
 .idea
+
+# local env files
+.env*.local
+
+# ts output files
+*.d.ts
+*.d.ts.map
+*.js
+*.js.map
