@@ -14,6 +14,7 @@ import {cleanEnv, str} from 'envalid'
 import { htmlToJson } from '../html-to-json.js';
 import { htmlToLinks } from '../html-to-links.js';
 import path from 'path'
+import { log } from '../log.js';
 
 const env = cleanEnv(process.env, {
   DEEP_TOKEN: str(),

@@ -1,6 +1,7 @@
 // import modules
 import fs from 'fs';
 import { JSDOM } from 'jsdom';
+import { log } from './log.js';
 
 // функция для чтения и обработки HTML файла
 async function extractPAndSaveToFile({ htmlFilePath, outputFilePath }: { htmlFilePath: string; outputFilePath: string; }) {

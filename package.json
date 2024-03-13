@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "bun test __tests__"
+    "test": "npx tsc && NODE_OPTIONS=--experimental-vm-modules npx jest --config jest.config.js"
   },
   "type": "module",
   "repository": {

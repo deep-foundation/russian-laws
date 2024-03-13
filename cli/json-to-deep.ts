@@ -14,7 +14,8 @@ import {cleanEnv, str} from 'envalid'
 import { htmlToJson } from '../html-to-json.js';
 import { htmlToLinks } from '../html-to-links.js';
 import path from 'path'
-import { jsonToLinks } from '../json-to-links.js';
+import { JsonToLinks } from '../json-to-links.js';
+import { log } from '../log.js';
 
 const env = cleanEnv(process.env, {
   DEEP_TOKEN: str(),
@@ -79,5 +80,6 @@ log('containTypeLinkId', containTypeLinkId);
 
 const sourceFullPath = path.join(options.sourceDirectory, options.sourceFileName);
 let json = JSON.parse(fs.readFileSync(sourceFullPath, 'utf8'));
-jsonToLinks({deep,json,spaceId: options.targetSpaceId});
+const jsonToLinks = await JsonToLinks.new({deep})
+jsonToLinks.convert({json,documentLinkId: options.targetSpaceId});
 

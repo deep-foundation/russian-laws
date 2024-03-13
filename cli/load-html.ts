@@ -10,6 +10,7 @@ import cheerio from 'cheerio';
 import {html as beautify} from 'js-beautify';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { log } from '../log.js';
 
 const options = yargs(hideBin(process.argv))
   .usage(`$0 [Options]`, `Description of the program`)

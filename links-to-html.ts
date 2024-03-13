@@ -1,5 +1,5 @@
 import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
-import { log } from "./log";
+import { log } from "./log.js";
 
 export async function linksToHtml({
   deep,

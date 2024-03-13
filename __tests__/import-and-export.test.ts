@@ -10,7 +10,6 @@ import { generateApolloClient } from '@deep-foundation/hasura/client.js';
 import { htmlToLinks } from '../html-to-links.js';
 import { linksToHtml } from '../links-to-html.js';
 import { log } from '../log.js';
-import { expect, test, beforeAll, describe, it } from 'bun:test';
 import { bool, cleanEnv, num, str } from 'envalid';
 import dotenv from 'dotenv';
 
@@ -80,9 +79,7 @@ if (env.HTML_FILE_NAMES !== "") {
       console.error(`Error during import and export of ${env.HTML_FILE_NAMES}`, error);
       process.exit(1);
     }
-  }, {
-    timeout: env.TIMEOUT
-  })
+  }, env.TIMEOUT)
 } else {
   console.log(`HTML_FILE_NAMES environment variable is not passed. Testing all files in data/html`)
   describe("import and export all", async () => {
@@ -92,9 +89,7 @@ if (env.HTML_FILE_NAMES !== "") {
         it(`import and export ${file}`, async () => {
           const html = await fsExtra.readFile(file, 'utf8');
           await importAndExportTest({ html });
-        }, {
-          timeout: env.TIMEOUT,
-        });
+        }, env.TIMEOUT);
       }
     } catch (error) {
       console.error('Error during import and export all:', error);
