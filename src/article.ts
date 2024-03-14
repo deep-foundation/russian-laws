@@ -1,5 +1,5 @@
-import { Clause } from "./clause.js";
-import { Comment } from "./comment.js";
+import { Clause } from "./clause";
+import { Comment } from "./comment";
 
 export type ArticleChild = Clause | Comment;
 

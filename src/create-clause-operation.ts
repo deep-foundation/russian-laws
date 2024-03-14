@@ -1,4 +1,4 @@
-import { createSerialOperation } from "@deep-foundation/deeplinks/imports/gql/index.js";
+import { createSerialOperation } from "@deep-foundation/deeplinks/imports/gql/index";
 
 export function createClauseOperation({ clause, articleLinkId, clauseTypeLinkId, containTypeLinkId }: { clause: string; articleLinkId: number; clauseTypeLinkId: number; containTypeLinkId: number; }) {
     return createSerialOperation({

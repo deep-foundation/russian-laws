@@ -5,11 +5,11 @@ import { hideBin } from 'yargs/helpers';
 import { glob } from 'glob';
 import cheerio from 'cheerio';
 import { diffLines } from 'diff';
-import { DeepClient } from '@deep-foundation/deeplinks/imports/client.js';
-import { generateApolloClient } from '@deep-foundation/hasura/client.js';
-import { htmlToLinks } from '../html-to-links.js';
-import { linksToHtml } from '../links-to-html.js';
-import { log } from '../log.js';
+import { DeepClient } from '@deep-foundation/deeplinks/imports/client';
+import { generateApolloClient } from '@deep-foundation/hasura/client';
+import { htmlToLinks } from '../src/html-to-links';
+import { linksToHtml } from '../src/links-to-html';
+import { log } from '../src/log';
 import { bool, cleanEnv, num, str } from 'envalid';
 import dotenv from 'dotenv';
 

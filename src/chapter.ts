@@ -1,6 +1,6 @@
-import { Article } from "./article.js";
-import type { Clause } from "./clause.js";
-import { Comment } from "./comment.js";
+import { Article } from "./article";
+import type { Clause } from "./clause";
+import { Comment } from "./comment";
 
 export type ChapterChild = Article | Comment;
 export class Chapter {

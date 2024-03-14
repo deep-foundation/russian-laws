@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 import { JSDOM } from "jsdom";
-import { saveFile } from '../files.js';
+import { saveFile } from '../files';
 import { program } from 'commander';
 import path from 'path';
 import fs from "fs";
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { htmlToJson } from "../html-to-json.js";
+import { htmlToJson } from "../html-to-json";
 
 const options = yargs(hideBin(process.argv))
   .usage(`$0 [Options]`, `Description of the program`)

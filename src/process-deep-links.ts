@@ -1,5 +1,5 @@
-import { DeepClient } from "@deep-foundation/deeplinks/imports/client.js";
-import { log } from "./log.js";
+import { DeepClient } from "@deep-foundation/deeplinks/imports/client";
+import { log } from "./log";
 
 function processDeepLinks({ deep, rootId }: { deep: DeepClient; rootId: number; }) {
     const containTypeLinkId = deep.idLocal('@deep-foundation/core', 'Contain')

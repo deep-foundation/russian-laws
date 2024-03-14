@@ -1,10 +1,10 @@
 import { JSDOM } from "jsdom";
-import { Section } from "./section.js";
-import { Chapter } from "./chapter.js";
-import { Article } from "./article.js";
-import { Comment } from "./comment.js";
-import type { HtmlItem } from "./html-item.js";
-import { Clause } from "./clause.js";
+import { Section } from "./section";
+import { Chapter } from "./chapter";
+import { Article } from "./article";
+import { Comment } from "./comment";
+import type { HtmlItem } from "./html-item";
+import { Clause } from "./clause";
 
 export function htmlToJson({ html }: { html: string }) {
   const result: {

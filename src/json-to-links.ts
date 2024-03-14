@@ -2,16 +2,16 @@ import type {
   DeepClient,
   DeepClientResult,
   SerialOperation,
-} from "@deep-foundation/deeplinks/imports/client.js";
-import { Comment } from "./comment.js";
-import type { LawPage } from "./law-page.js";
-import { log } from "./log.js";
-import { createSerialOperation } from "@deep-foundation/deeplinks/imports/gql/serial.js";
-import { Chapter } from "./chapter.js";
-import { Article } from "./article.js";
-import { Section } from "./section.js";
-import { Clause } from "./clause.js";
-import type { HtmlItem } from "./html-item.js";
+} from "@deep-foundation/deeplinks/imports/client";
+import { Comment } from "./comment";
+import type { LawPage } from "./law-page";
+import { log } from "./log";
+import { createSerialOperation } from "@deep-foundation/deeplinks/imports/gql/serial";
+import { Chapter } from "./chapter";
+import { Article } from "./article";
+import { Section } from "./section";
+import { Clause } from "./clause";
+import type { HtmlItem } from "./html-item";
 
 export class JsonToLinks {
   private _reservedLinkIds: number[] = [];

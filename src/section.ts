@@ -1,5 +1,5 @@
-import { Chapter } from "./chapter.js";
-import { Comment } from "./comment.js";
+import { Chapter } from "./chapter";
+import { Comment } from "./comment";
 
 export type SectionChild = Chapter | Comment;
 export class Section {
