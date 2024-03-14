@@ -30,11 +30,11 @@ export function htmlToJson({ html }: { html: string }) {
     }
 
     const isSection =
-      p.classList.contains("T") && text.toLowerCase().startsWith("раздел");
+      p.classList.contains("T") || text.toLowerCase().startsWith("раздел");
     const isChapter =
-      p.classList.contains("H") && text.toLowerCase().startsWith("глава");
+      p.classList.contains("H") || text.toLowerCase().startsWith("глава");
     const isArticle =
-      p.classList.contains("H") && text.toLowerCase().startsWith("статья");
+      p.classList.contains("H") || text.toLowerCase().startsWith("статья");
     const isComment = p.classList.contains("I") || text.startsWith("(");
 
     if (preambleMode && !isChapter && !isSection) {
