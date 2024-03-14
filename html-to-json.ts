@@ -20,21 +20,18 @@ export function htmlToJson({ html }: { html: string }) {
   let commentOrClauseParent: Section | Chapter | Article | null = null;
 
   for (const p of paragraphs) {
-    if (!p.textContent) {
-      throw new Error("Empty paragraph");
-    }
-    let text = p.textContent.trim();
+    let text = p.textContent?.trim();
     const htmlContent = p.innerHTML.trim();
     if (htmlContent === "&nbsp;" || !text) {
       continue;
     }
 
     const isSection =
-      p.classList.contains("T") || text.toLowerCase().startsWith("раздел");
+      p.classList.contains("T") && text.toLowerCase().startsWith("раздел");
     const isChapter =
-      p.classList.contains("H") || text.toLowerCase().startsWith("глава");
+      p.classList.contains("H") || p.classList.contains("C") && text.toLowerCase().startsWith("глава");
     const isArticle =
-      p.classList.contains("H") || text.toLowerCase().startsWith("статья");
+      p.classList.contains("H") && text.toLowerCase().startsWith("статья");
     const isComment = p.classList.contains("I") || text.startsWith("(");
 
     if (preambleMode && !isChapter && !isSection) {
