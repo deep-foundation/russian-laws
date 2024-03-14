@@ -1,5 +1,7 @@
-export default {
-  verbose: true,
-  testEnvironment: 'node',
-  testMatch: ['**/__tests__/*.js']
-};
+import type { JestConfigWithTsJest } from 'ts-jest'
+
+const jestConfig: JestConfigWithTsJest = {
+  preset: 'ts-jest/presets/default-esm'
+}
+
+export default jestConfig

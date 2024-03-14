@@ -1,4 +1,4 @@
-import type { HtmlItem } from "./html-item.js";
+import type { HtmlItem } from "./html-item";
 
 export type Preamble = {
   title: string;
