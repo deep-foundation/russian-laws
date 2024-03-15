@@ -27,12 +27,12 @@ export function htmlToJson({ html }: { html: string }) {
     }
 
     const isSection =
-      p.classList.contains("T") && text.toLowerCase().startsWith("раздел");
+    text.toLowerCase().startsWith("раздел") || p.classList.contains("T");
     const isChapter =
-      p.classList.contains("H") || p.classList.contains("C") && text.toLowerCase().startsWith("глава");
+    text.toLowerCase().startsWith("глава") && p.classList.contains("H") || p.classList.contains("C");
     const isArticle =
-      p.classList.contains("H") && text.toLowerCase().startsWith("статья");
-    const isComment = p.classList.contains("I") || text.startsWith("(");
+    text.toLowerCase().startsWith("статья") && p.classList.contains("H");
+    const isComment = text.startsWith("(") || p.classList.contains("I");
 
     if (preambleMode && !isChapter && !isSection) {
       result.preamble.push(htmlContent);
