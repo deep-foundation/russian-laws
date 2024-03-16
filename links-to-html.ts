@@ -73,7 +73,7 @@ export class LinksToHtml {
     log({indexLinks})
     const childLinks = indexLinks?.map((link) => link.to);
     log({ childLinks });
-    childLinks.forEach((childLink) => {
+    for (const childLink of childLinks) {
       const text = childLink["string"].value;
       
       if(childLink.type_id === this._sectionTypeLinkId) {
@@ -98,7 +98,7 @@ export class LinksToHtml {
         const childHtmlContent = this._processLink({link: childLink})
         htmlContent += childHtmlContent;
       }
-    });
+    }
 
     return htmlContent
   }
