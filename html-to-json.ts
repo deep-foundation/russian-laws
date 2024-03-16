@@ -5,75 +5,72 @@ import { Article } from "./article.js";
 import { Comment } from "./comment.js";
 import type { HtmlItem } from "./html-item.js";
 import { Clause } from "./clause.js";
+import { Codex } from "./codex.js";
 
 export function htmlToJson({ html }: { html: string }) {
-  const result: {
-    preamble: Array<string>;
-    sections: Array<Section>;
-    preambleComments: Array<Comment>;
-  } = { preamble: [], sections: [], preambleComments: [] };
+  const result = new Codex({ preamble: [], children: [], preambleComments: [] });
   const dom = new JSDOM(html);
-  const paragraphs = [...dom.window.document.querySelectorAll("p")];
+  const paragraphs = Array.from(dom.window.document.querySelectorAll("p"));
 
   let preambleMode = true;
 
-  let commentOrClauseParent: Section | Chapter | Article | null = null;
+  const parents: (Codex | Section | Chapter | Article)[] = [result];
 
-  for (const p of paragraphs) {
-    let text = p.textContent?.trim();
-    const htmlContent = p.innerHTML.trim();
-    if (htmlContent === "&nbsp;" || !text) {
+  for (const paragraph of paragraphs) {
+    const text = paragraph.textContent?.trim();
+    const htmlContent = paragraph.innerHTML.trim();
+    
+    if (!text || htmlContent === "&nbsp;") {
       continue;
     }
 
-    const isSection =
-    text.toLowerCase().startsWith("раздел") || p.classList.contains("T");
-    const isChapter =
-    text.toLowerCase().startsWith("глава") && p.classList.contains("H") || p.classList.contains("C");
-    const isArticle =
-    text.toLowerCase().startsWith("статья") && p.classList.contains("H");
-    const isComment = text.startsWith("(") || p.classList.contains("I");
+    const isSection = text.toLowerCase().startsWith("раздел") || paragraph.classList.contains("T");
+    const isChapter = text.toLowerCase().startsWith("глава") && (paragraph.classList.contains("H") || paragraph.classList.contains("C"));
+    const isArticle = text.toLowerCase().startsWith("статья") && paragraph.classList.contains("H");
+    const isComment = text.startsWith("(") || paragraph.classList.contains("I");
 
     if (preambleMode && !isChapter && !isSection) {
       result.preamble.push(htmlContent);
       continue;
     }
-    if (isSection || isChapter || isArticle || isComment) {
+
+    let parent: Codex | Section | Chapter | Article = parents[parents.length - 1];
+
+    if (isSection || isChapter || isArticle) {
+      for (let i = parents.length - 1; i >= 0; i--) {
+        if (!(parents[i] instanceof Article)) {
+          parent = parents[i];
+          break;
+        }
+      }
+      
       preambleMode = false;
+
+      let htmlItem: HtmlItem;
+
       if (isSection) {
-        const section = new Section({ title: htmlContent, children: [] });
-        commentOrClauseParent = section;
-        result.sections.push(section);
+        htmlItem = new Section({ title: htmlContent, children: [] });
       } else if (isChapter) {
-        const chapter = new Chapter({ title: htmlContent, children: [] });
-        commentOrClauseParent = chapter;
-        const parentSection = result.sections[result.sections.length - 1];
-        parentSection.children.push(chapter);
+        htmlItem = new Chapter({ title: htmlContent, children: [] });
       } else if (isArticle) {
-        const article = new Article({ title: htmlContent, children: [] });
-        commentOrClauseParent = article;
-        const parentSection = result.sections[result.sections.length - 1];
-        const parent =
-          parentSection.children[parentSection.children.length - 1];
-        const isParentChapter = 'children' in parent;
-        if(isParentChapter) {
-            parent.children.push(article);
-        }
-      } else if (isComment) {
-        const comment = new Comment({ text: htmlContent });
-        if (commentOrClauseParent) {
-        //   @ts-ignore I have no idea why error is here. All (SectionChild|ChapterChild|ArticleChild) match Comment
-          commentOrClauseParent.children.push(comment);
-        } else {
-            result.preambleComments.push(comment);
-        }
-      } 
-    } else if (commentOrClauseParent instanceof Article) {
-      const clause = new Clause({ text: htmlContent });
-      commentOrClauseParent.children.push(clause);
-    } else {
+        htmlItem = new Article({ title: htmlContent, children: [] });
+      } else {
+        throw new Error(`Unreachable condition`);
+      }
+      parent.children.push(htmlItem)
+    } else if (isComment) {
+      const comment = new Comment({ text: htmlContent });
+      if(parent instanceof Codex) {
+        result.preambleComments.push(comment)
+      } else {
+        parent.children.push(comment)
+      }
+    } else if (parent instanceof Codex) {
       result.preamble.push(htmlContent);
+    } else {
+      parent.children.push(new Clause({ text: htmlContent }));
     }
   }
+
   return result;
 }

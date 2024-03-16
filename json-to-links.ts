@@ -4,7 +4,7 @@ import type {
   SerialOperation,
 } from "@deep-foundation/deeplinks/imports/client.js";
 import { Comment } from "./comment.js";
-import type { LawPage } from "./law-page.js";
+import type { Codex } from "./codex.js";
 import { log } from "./log.js";
 import { createSerialOperation } from "@deep-foundation/deeplinks/imports/gql/serial.js";
 import { Chapter } from "./chapter.js";
@@ -65,39 +65,27 @@ export class JsonToLinks {
     });
   }
 
-  countLinksToReserve({ json }: { json: LawPage }) {
+  countLinksToReserveForHtmlItem(options:{htmlItem: HtmlItem}) {
+    const {htmlItem} = options
+    let count = 
+    1+ // item
+    1+ // contain for item
+    1+ // index for item
+    1 // contain for index
+    if(htmlItem instanceof Section || htmlItem instanceof Chapter || htmlItem instanceof Article) {
+      for (const childHtmlItem of htmlItem.children) {
+        const childCount = this.countLinksToReserveForHtmlItem({htmlItem: childHtmlItem})
+        count += childCount
+      }
+    }
+    return count;
+  }
+
+  countLinksToReserve({ json }: { json: Codex }) {
     let count = 0;
-    json.sections.forEach((section) => {
-      count++; // section
-      count++; // contain for section
-      count++; // index for section
-      count++; // contain for index
-      section.children.forEach((chapterOrComment) => {
-        count++; // item
-        count++; // contain for item
-        count++; // index for item
-        count++; // contain for index
-        const hasChildren = "children" in chapterOrComment;
-        if (hasChildren) {
-          const chapter = chapterOrComment;
-          chapter.children.forEach((articleOrComment) => {
-            count++; // article
-            count++; // contain for article
-            count++; // index for article
-            count++; // contain for index
-            const hasChildren = "children" in articleOrComment;
-            if (hasChildren) {
-              const article = articleOrComment;
-              article.children.forEach((commentOrClause) => {
-                count++; // clause
-                count++; // contain for clause
-                count++; // index for clause
-                count++; // contain for index
-              });
-            }
-          });
-        }
-      });
+    json.children.forEach((childHtmlItem) => {
+      const childCount = this.countLinksToReserveForHtmlItem({htmlItem: childHtmlItem})      
+      count+=childCount
     });
     return count;
   }
@@ -106,7 +94,7 @@ export class JsonToLinks {
     json,
     documentLinkId,
   }: {
-    json: LawPage;
+    json: Codex;
     documentLinkId: number;
   }) {
     const { deep } = this._config;
@@ -145,7 +133,7 @@ export class JsonToLinks {
 
     const operations = this.makeHtmlItemsOperations({
       parentLinkId: documentLinkId,
-      items: json.sections
+      items: json.children
     });
 
     log({ operations });
