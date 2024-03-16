@@ -92,7 +92,7 @@ export class LinksToHtml {
   
       const indexLinks = childLink.outByType[this._indexTypeLinkId]?.sort((a,b) => a.value.value - b.value.value);
       log({indexLinks})
-      const childLinks = indexLinks.map((link) => link.to);
+      const childLinks = indexLinks?.map((link) => link.to);
       log({ childLinks });
       for (const childLink of childLinks) {
         const childHtmlContent = this._processLink({link: childLink})
