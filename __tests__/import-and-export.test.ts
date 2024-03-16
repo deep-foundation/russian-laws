@@ -8,11 +8,11 @@ import { diffLines } from 'diff';
 import { DeepClient } from '@deep-foundation/deeplinks/imports/client.js';
 import { generateApolloClient } from '@deep-foundation/hasura/client.js';
 import { htmlToLinks } from '../html-to-links.js';
-import { linksToHtml } from '../links-to-html.js';
 import { log } from '../log.js';
 import { expect, test, beforeAll, describe, it } from 'bun:test';
 import { bool, cleanEnv, num, str } from 'envalid';
 import dotenv from 'dotenv';
+import { LinksToHtml } from '../links-to-html.js';
 
 dotenv.config({ path: '.env.tests.local' });
 
@@ -116,19 +116,20 @@ async function importAndExportTest(options: { html: string }) {
       return text !== '' && text !== '\u00A0';
     });
 
-    const { data: [{ id: documentLinkId }] } = await deep.insert({
+    const { data: [{ id: codexLinkId }] } = await deep.insert({
       type_id: deep.idLocal("@deep-foundation/core", "Space")
     })
-    log({ documentLinkId })
-    const processHtmlAndCreateLinksResult = await htmlToLinks({ deep, html: html, documentLinkId: documentLinkId })
+    log({ codexLinkId: codexLinkId })
+    const processHtmlAndCreateLinksResult = await htmlToLinks({ deep, html: html, documentLinkId: codexLinkId })
     log({ processHtmlAndCreateLinksResult })
     const { data: linksDownToDocument } = await deep.select({
       up: {
-        parent_id: documentLinkId,
+        parent_id: codexLinkId,
       }
     })
     deep.minilinks.apply(linksDownToDocument);
-    const exportedHtml = await linksToHtml({ deep, documentRootId: documentLinkId })
+    const linksToHtml = await LinksToHtml.new({deep})
+    const exportedHtml = await linksToHtml.convert({ deep, codexLinkId })
     log({ exportedHtml })
     const exportedHtmlParsed = cheerio.load(exportedHtml);
     const exportedHtmlParagraphs = exportedHtmlParsed('p');
