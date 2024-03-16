@@ -94,9 +94,11 @@ export class LinksToHtml {
       log({indexLinks})
       const childLinks = indexLinks?.map((link) => link.to);
       log({ childLinks });
-      for (const childLink of childLinks) {
-        const childHtmlContent = this._processLink({link: childLink})
-        htmlContent += childHtmlContent;
+      if(childLinks) {
+        for (const childLink of childLinks) {
+          const childHtmlContent = this._processLink({link: childLink})
+          htmlContent += childHtmlContent;
+        }
       }
     }
 
